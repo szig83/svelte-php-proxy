@@ -1,0 +1,71 @@
+# Svelte SPA .htaccess
+# Ez a fájl a build után a public_html gyökerébe kerül
+#
+# Követelmények: 1.3 (Apache szerverre telepíthető Node.js runtime nélkül)
+
+# Rewrite engine bekapcsolása
+RewriteEngine On
+
+# HTTPS kényszerítés (ha nincs Virtual Host szinten beállítva)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# SPA Routing
+# Minden nem létező fájl/mappa -> index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !^/api/
+RewriteRule ^(.*)$ /index.html [L]
+
+# Biztonsági fejlécek
+<IfModule mod_headers.c>
+    # XSS védelem
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Referrer policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Permissions Policy
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# Tömörítés
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE application/xml application/xhtml+xml
+</IfModule>
+
+# Cache beállítások
+<IfModule mod_expires.c>
+    ExpiresActive On
+
+    # Svelte immutable assets (hash-elt fájlnevek)
+    <FilesMatch "\.[a-f0-9]{8}\.(js|css)$">
+        ExpiresDefault "access plus 1 year"
+        Header set Cache-Control "public, immutable"
+    </FilesMatch>
+
+    # Képek és fontok
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/woff "access plus 1 year"
+
+    # HTML ne legyen cache-elve
+    ExpiresByType text/html "access plus 0 seconds"
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+</IfModule>
+
+# Rejtett fájlok védelme
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Könyvtár listázás tiltása
+Options -Indexes

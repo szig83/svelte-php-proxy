@@ -1,0 +1,64 @@
+# PHP Proxy API .htaccess
+# Követelmények: 2.1
+
+# Rewrite engine bekapcsolása
+RewriteEngine On
+
+# Minden kérés az index.php-ra irányítása
+# (kivéve ha létező fájl vagy könyvtár)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]
+
+# CORS headers
+<IfModule mod_headers.c>
+    # Fejlesztési környezetben engedélyezzük a localhost-ot
+    # Production-ben ezt a konkrét domain-re kell cserélni
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-CSRF-Token, X-Requested-With"
+    Header always set Access-Control-Allow-Credentials "true"
+    Header always set Access-Control-Max-Age "86400"
+
+    # OPTIONS preflight kérések kezelése
+    RewriteCond %{REQUEST_METHOD} OPTIONS
+    RewriteRule ^(.*)$ $1 [R=204,L]
+</IfModule>
+
+# PHP beállítások (ha mod_php van használatban)
+<IfModule mod_php.c>
+    # Session biztonság
+    php_value session.cookie_httponly 1
+    php_value session.cookie_secure 1
+    php_value session.cookie_samesite Strict
+    php_value session.use_strict_mode 1
+
+    # Hibakezelés (production-ben ki kell kapcsolni)
+    php_flag display_errors Off
+    php_flag log_errors On
+</IfModule>
+
+# Biztonsági fejlécek
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# PHP fájlok védelme (csak index.php legyen elérhető)
+<FilesMatch "\.php$">
+    <If "%{REQUEST_URI} !~ m#^/api/index\.php$# && %{REQUEST_URI} !~ m#^/api/$# && %{REQUEST_URI} !~ m#^/api$#">
+        Require all denied
+    </If>
+</FilesMatch>
+
+# Rejtett fájlok védelme
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+# Composer és egyéb konfigurációs fájlok védelme
+<FilesMatch "(composer\.(json|lock)|\.env|\.gitignore)$">
+    Require all denied
+</FilesMatch>

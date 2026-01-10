@@ -1,0 +1,187 @@
+# Apache Virtual Host Konfiguráció Minta
+# Svelte 5 + PHP Proxy Auth Rendszer
+#
+# Követelmények: 10.3 (HTTPS használata minden Külső_API kommunikációhoz)
+#
+# TELEPÍTÉS:
+# 1. Másold ezt a fájlt: /etc/apache2/sites-available/myapp.conf
+# 2. Módosítsd a ServerName és útvonalakat
+# 3. Engedélyezd: sudo a2ensite myapp.conf
+# 4. Töltsd újra: sudo systemctl reload apache2
+
+# HTTP -> HTTPS átirányítás
+<VirtualHost *:80>
+    ServerName myapp.example.com
+    ServerAlias www.myapp.example.com
+
+    # Minden HTTP kérés átirányítása HTTPS-re
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</VirtualHost>
+
+# HTTPS Virtual Host
+<VirtualHost *:443>
+    ServerName myapp.example.com
+    ServerAlias www.myapp.example.com
+    ServerAdmin admin@example.com
+
+    # Document Root - a publikus mappa
+    DocumentRoot /var/www/myapp/public_html
+
+    # =========================================
+    # SSL KONFIGURÁCIÓ
+    # =========================================
+    SSLEngine on
+
+    # SSL tanúsítvány fájlok (Let's Encrypt példa)
+    SSLCertificateFile /etc/letsencrypt/live/myapp.example.com/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/myapp.example.com/privkey.pem
+
+    # Modern SSL beállítások (TLS 1.2+)
+    SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
+    SSLCipherSuite ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384
+    SSLHonorCipherOrder off
+    SSLSessionTickets off
+
+    # HSTS (HTTP Strict Transport Security)
+    Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+
+    # =========================================
+    # DOCUMENT ROOT KONFIGURÁCIÓ
+    # =========================================
+    <Directory /var/www/myapp/public_html>
+        Options -Indexes +FollowSymLinks -MultiViews
+        AllowOverride All
+        Require all granted
+
+        # SPA fallback - minden nem létező fájl -> index.html
+        # Ez biztosítja, hogy a Svelte routing működjön
+        FallbackResource /index.html
+    </Directory>
+
+    # =========================================
+    # PHP API VÉGPONT KONFIGURÁCIÓ
+    # =========================================
+    <Directory /var/www/myapp/public_html/api>
+        AllowOverride All
+        Require all granted
+
+        # PHP-FPM használata esetén
+        <FilesMatch \.php$>
+            SetHandler "proxy:unix:/run/php/php8.1-fpm.sock|fcgi://localhost"
+        </FilesMatch>
+    </Directory>
+
+    # PHP beállítások (mod_php esetén)
+    <IfModule mod_php.c>
+        # Session biztonság
+        php_value session.cookie_httponly 1
+        php_value session.cookie_secure 1
+        php_value session.cookie_samesite Strict
+        php_value session.use_strict_mode 1
+        php_value session.gc_maxlifetime 3600
+
+        # Hibakezelés (production)
+        php_flag display_errors Off
+        php_flag log_errors On
+        php_value error_log /var/log/apache2/myapp_php_errors.log
+
+        # Fájlfeltöltés limitek
+        php_value upload_max_filesize 10M
+        php_value post_max_size 12M
+        php_value max_execution_time 30
+    </IfModule>
+
+    # =========================================
+    # TITKOS MAPPÁK VÉDELME
+    # =========================================
+
+    # A config, src és vendor mappák TILOS, hogy elérhetőek legyenek
+    # Ezek a document root-on KÍVÜL kell legyenek, de extra védelemként:
+    <DirectoryMatch "^/var/www/myapp/(config|src|vendor)">
+        Require all denied
+    </DirectoryMatch>
+
+    # .env és egyéb titkos fájlok védelme
+    <FilesMatch "^\.env|\.git|composer\.(json|lock)$">
+        Require all denied
+    </FilesMatch>
+
+    # Rejtett fájlok és mappák védelme
+    <DirectoryMatch "/\.">
+        Require all denied
+    </DirectoryMatch>
+
+    # =========================================
+    # BIZTONSÁGI FEJLÉCEK
+    # =========================================
+    <IfModule mod_headers.c>
+        # XSS védelem
+        Header always set X-Content-Type-Options "nosniff"
+        Header always set X-Frame-Options "DENY"
+        Header always set X-XSS-Protection "1; mode=block"
+
+        # Referrer policy
+        Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+        # Content Security Policy (módosítsd az igényeid szerint)
+        # Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';"
+
+        # Permissions Policy
+        Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    </IfModule>
+
+    # =========================================
+    # NAPLÓZÁS
+    # =========================================
+    ErrorLog ${APACHE_LOG_DIR}/myapp_error.log
+    CustomLog ${APACHE_LOG_DIR}/myapp_access.log combined
+
+    # Részletes naplózás hibakereséshez (production-ben kommenteld ki)
+    # LogLevel debug
+    LogLevel warn
+
+    # =========================================
+    # TELJESÍTMÉNY OPTIMALIZÁLÁS
+    # =========================================
+    <IfModule mod_deflate.c>
+        # Tömörítés engedélyezése
+        AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+        AddOutputFilterByType DEFLATE application/javascript application/json
+        AddOutputFilterByType DEFLATE application/xml application/xhtml+xml
+    </IfModule>
+
+    <IfModule mod_expires.c>
+        ExpiresActive On
+
+        # Statikus fájlok cache-elése
+        ExpiresByType image/jpeg "access plus 1 year"
+        ExpiresByType image/png "access plus 1 year"
+        ExpiresByType image/gif "access plus 1 year"
+        ExpiresByType image/svg+xml "access plus 1 year"
+        ExpiresByType image/webp "access plus 1 year"
+        ExpiresByType text/css "access plus 1 month"
+        ExpiresByType application/javascript "access plus 1 month"
+        ExpiresByType font/woff2 "access plus 1 year"
+        ExpiresByType font/woff "access plus 1 year"
+
+        # HTML és API válaszok ne legyenek cache-elve
+        ExpiresByType text/html "access plus 0 seconds"
+        ExpiresByType application/json "access plus 0 seconds"
+    </IfModule>
+</VirtualHost>
+
+# =========================================
+# SZÜKSÉGES APACHE MODULOK
+# =========================================
+# A következő modulokat engedélyezni kell:
+#
+# sudo a2enmod ssl
+# sudo a2enmod rewrite
+# sudo a2enmod headers
+# sudo a2enmod deflate
+# sudo a2enmod expires
+# sudo a2enmod proxy_fcgi (PHP-FPM esetén)
+#
+# Majd: sudo systemctl restart apache2

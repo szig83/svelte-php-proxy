@@ -1,0 +1,15 @@
+# Környezeti változók - SOHA ne commitold!
+.env
+
+# Composer
+/vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
