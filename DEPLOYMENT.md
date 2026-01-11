@@ -6,14 +6,167 @@ Ez a dokumentum a rendszer telepítésének lépéseit írja le Apache + PHP kö
 
 ## Tartalomjegyzék
 
-1. [Szerver Követelmények](#szerver-követelmények)
-2. [Projekt Struktúra](#projekt-struktúra)
-3. [Build Folyamat](#build-folyamat)
-4. [Deploy Lépések](#deploy-lépések)
-5. [Környezeti Változók](#környezeti-változók)
-6. [Apache Konfiguráció](#apache-konfiguráció)
-7. [SSL Tanúsítvány](#ssl-tanúsítvány)
-8. [Hibaelhárítás](#hibaelhárítás)
+1. [Fejlesztési Környezet](#fejlesztési-környezet)
+2. [Szerver Követelmények](#szerver-követelmények)
+3. [Projekt Struktúra](#projekt-struktúra)
+4. [Build Folyamat](#build-folyamat)
+5. [Deploy Lépések](#deploy-lépések)
+6. [Deploy Különböző OS-ekről](#deploy-különböző-os-ekről)
+7. [Környezeti Változók](#környezeti-változók)
+8. [Apache Konfiguráció](#apache-konfiguráció)
+9. [SSL Tanúsítvány](#ssl-tanúsítvány)
+10. [Hibaelhárítás](#hibaelhárítás)
+
+---
+
+## Fejlesztési Környezet
+
+A napi fejlesztés során **NEM kell** minden változtatás után buildelni és szinkronizálni. A fejlesztés lokálisan történik, gyors visszajelzéssel.
+
+### Előfeltételek (Lokális Gép)
+
+| Komponens | Verzió | Telepítés |
+|-----------|--------|-----------|
+| Node.js | 18+ | [nodejs.org](https://nodejs.org) |
+| **VAGY** Bun | 1.0+ | [bun.sh](https://bun.sh) |
+| PHP | 8.1+ | Homebrew (macOS), XAMPP/Laragon (Windows) |
+
+**JavaScript Runtime választás**: Használhatsz Node.js-t vagy Bun-t - mindkettő tökéletesen működik. A Bun gyorsabb, de a Node.js elterjedtebb.
+
+### Frontend Fejlesztés
+
+A Svelte fejlesztői szerver HMR-rel (Hot Module Replacement) működik - a változtatások azonnal megjelennek a böngészőben.
+
+#### Node.js + npm használatával
+
+```bash
+cd frontend
+
+# Függőségek telepítése (első alkalommal)
+npm install
+
+# Fejlesztői szerver indítása
+npm run dev
+
+# Böngészőben: http://localhost:5173
+```
+
+#### Bun használatával
+
+```bash
+cd frontend
+
+# Függőségek telepítése (első alkalommal)
+bun install
+
+# Fejlesztői szerver indítása
+bun run dev
+
+# Böngészőben: http://localhost:5173
+```
+
+**Előnyök**:
+- Mentés után ~100ms-en belül frissül a böngésző
+- Nem kell build, nem kell szinkronizálás
+- CSS változtatások azonnal látszanak
+- Komponens állapot megmarad frissítéskor
+
+### Backend Fejlesztés (Lokális PHP)
+
+A PHP-hoz nem kell build, de szükséged van egy lokális PHP szerverre.
+
+#### macOS (Homebrew)
+
+```bash
+# PHP telepítése
+brew install php
+
+# PHP szerver indítása
+cd backend/public
+php -S localhost:8000
+
+# API elérhető: http://localhost:8000
+```
+
+#### Windows (Laragon - Ajánlott)
+
+1. Telepítsd a [Laragon](https://laragon.org/download/)-t
+2. Másold a `backend` mappát a `C:\laragon\www\myapp-api` helyre
+3. Indítsd el a Laragon-t
+4. API elérhető: `http://myapp-api.test` vagy `http://localhost/myapp-api`
+
+#### Windows (XAMPP)
+
+1. Telepítsd a [XAMPP](https://www.apachefriends.org/)-ot
+2. Másold a `backend/public` mappát a `C:\xampp\htdocs\api` helyre
+3. Indítsd el az Apache-ot a XAMPP Control Panel-ből
+4. API elérhető: `http://localhost/api`
+
+### Frontend + Backend Összekapcsolása
+
+A frontend API hívásait a lokális PHP-ra kell irányítani. Ehhez a Vite proxy-t használjuk.
+
+#### vite.config.ts Beállítása
+
+```typescript
+// frontend/vite.config.ts
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
+
+export default defineConfig({
+  plugins: [sveltekit()],
+  server: {
+    proxy: {
+      // Lokális PHP szerver
+      '/api': {
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  }
+});
+```
+
+#### Távoli Backend Használata (Opcionális)
+
+Ha van staging szervered, használhatod azt is fejlesztés közben:
+
+```typescript
+// frontend/vite.config.ts
+export default defineConfig({
+  plugins: [sveltekit()],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://staging.myapp.com/api',
+        changeOrigin: true,
+        secure: true
+      }
+    }
+  }
+});
+```
+
+### Tipikus Fejlesztési Workflow
+
+1. **Reggel**: `npm run dev` indítása a frontend mappában
+2. **Fejlesztés közben**: Kód szerkesztése, mentés → automatikus frissülés
+3. **API tesztelés**: Lokális PHP szerver vagy staging backend
+4. **Nap végén**: Commit, push
+5. **Deploy**: Csak amikor staging-re vagy production-be mész
+
+### Mikor Kell Buildelni?
+
+| Helyzet | Build szükséges? |
+|---------|------------------|
+| CSS módosítás | ❌ Nem |
+| Új komponens | ❌ Nem |
+| Új oldal | ❌ Nem |
+| API kliens módosítás | ❌ Nem |
+| Staging-re deploy | ✅ Igen |
+| Production-be deploy | ✅ Igen |
+| SSG specifikus teszt | ✅ Igen (`npm run preview`) |
 
 ---
 
@@ -107,17 +260,29 @@ project/
 
 ### 1. Frontend Build
 
+#### Node.js + npm használatával
+
 ```bash
 cd frontend
 
 # Függőségek telepítése
 npm install
-# vagy
-bun install
 
 # Production build
 npm run build
-# vagy
+
+# A build kimenet: frontend/build/
+```
+
+#### Bun használatával
+
+```bash
+cd frontend
+
+# Függőségek telepítése
+bun install
+
+# Production build
 bun run build
 
 # A build kimenet: frontend/build/
@@ -198,6 +363,181 @@ sudo apache2ctl configtest
 
 # Apache újratöltése
 sudo systemctl reload apache2
+```
+
+---
+
+## Deploy Különböző OS-ekről
+
+### macOS
+
+A macOS-en az `rsync` és `ssh` alapból elérhető.
+
+#### Fájlok Feltöltése
+
+```bash
+# Frontend
+rsync -avz --delete frontend/build/ user@server:/var/www/myapp/public_html/
+
+# Backend
+rsync -avz backend/src/ user@server:/var/www/myapp/src/
+rsync -avz backend/public/ user@server:/var/www/myapp/public_html/api/
+rsync -avz backend/config/ user@server:/var/www/myapp/config/
+rsync -avz backend/vendor/ user@server:/var/www/myapp/vendor/
+```
+
+#### SSH Kulcs Beállítása (Ajánlott)
+
+```bash
+# SSH kulcs generálása (ha még nincs)
+ssh-keygen -t ed25519 -C "your_email@example.com"
+
+# Kulcs másolása a szerverre
+ssh-copy-id user@server
+
+# Ezután jelszó nélkül tudsz csatlakozni
+ssh user@server
+```
+
+### Windows
+
+Windows-on több lehetőség van:
+
+#### 1. WSL (Windows Subsystem for Linux) - Ajánlott
+
+A WSL-ben ugyanúgy működik minden, mint Linux-on.
+
+```bash
+# WSL telepítése (PowerShell Admin)
+wsl --install
+
+# WSL-ben
+rsync -avz --delete frontend/build/ user@server:/var/www/myapp/public_html/
+```
+
+#### 2. Git Bash
+
+A Git for Windows tartalmaz `rsync`-et és `ssh`-t.
+
+```bash
+# Git Bash-ben (ugyanaz mint Linux/macOS)
+rsync -avz --delete frontend/build/ user@server:/var/www/myapp/public_html/
+```
+
+#### 3. PowerShell + SCP
+
+Ha nincs rsync, használhatsz `scp`-t:
+
+```powershell
+# Frontend feltöltése
+scp -r frontend/build/* user@server:/var/www/myapp/public_html/
+
+# Backend feltöltése
+scp -r backend/src/* user@server:/var/www/myapp/src/
+scp -r backend/public/* user@server:/var/www/myapp/public_html/api/
+```
+
+**Megjegyzés**: Az `scp` nem törli a régi fájlokat, csak felülírja. Nagyobb változtatásoknál érdemes előbb törölni a távoli mappát.
+
+#### 4. WinSCP (GUI)
+
+Ha grafikus felületet preferálsz:
+
+1. Telepítsd a [WinSCP](https://winscp.net/)-t
+2. Csatlakozz a szerverhez (SFTP)
+3. Húzd át a fájlokat a megfelelő mappákba
+
+#### 5. VS Code SFTP Extension
+
+1. Telepítsd a "SFTP" extension-t (Natizyskunk)
+2. Konfiguráld a `.vscode/sftp.json` fájlt:
+
+```json
+{
+    "name": "Production Server",
+    "host": "server.example.com",
+    "protocol": "sftp",
+    "port": 22,
+    "username": "user",
+    "remotePath": "/var/www/myapp",
+    "uploadOnSave": false,
+    "privateKeyPath": "~/.ssh/id_ed25519"
+}
+```
+
+3. Jobb klikk → "Upload" a fájlokon/mappákon
+
+### Deploy Script (Cross-Platform)
+
+Érdemes egy egyszerű deploy scriptet készíteni:
+
+#### deploy.sh (macOS/Linux/WSL/Git Bash)
+
+```bash
+#!/bin/bash
+
+SERVER="user@server"
+REMOTE_PATH="/var/www/myapp"
+
+echo "🔨 Building frontend..."
+cd frontend
+
+# Használj npm-et vagy bun-t
+if command -v bun &> /dev/null; then
+    bun run build
+else
+    npm run build
+fi
+
+cd ..
+
+echo "📤 Uploading frontend..."
+rsync -avz --delete frontend/build/ $SERVER:$REMOTE_PATH/public_html/
+
+echo "📤 Uploading backend..."
+rsync -avz backend/src/ $SERVER:$REMOTE_PATH/src/
+rsync -avz backend/public/ $SERVER:$REMOTE_PATH/public_html/api/
+
+echo "✅ Deploy complete!"
+```
+
+Használat:
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
+#### deploy.ps1 (PowerShell)
+
+```powershell
+$SERVER = "user@server"
+$REMOTE_PATH = "/var/www/myapp"
+
+Write-Host "🔨 Building frontend..." -ForegroundColor Cyan
+Set-Location frontend
+
+# Használj npm-et vagy bun-t
+if (Get-Command bun -ErrorAction SilentlyContinue) {
+    bun run build
+} else {
+    npm run build
+}
+
+Set-Location ..
+
+Write-Host "📤 Uploading frontend..." -ForegroundColor Cyan
+scp -r frontend/build/* ${SERVER}:${REMOTE_PATH}/public_html/
+
+Write-Host "📤 Uploading backend..." -ForegroundColor Cyan
+scp -r backend/src/* ${SERVER}:${REMOTE_PATH}/src/
+scp -r backend/public/* ${SERVER}:${REMOTE_PATH}/public_html/api/
+
+Write-Host "✅ Deploy complete!" -ForegroundColor Green
+```
+
+Használat:
+```powershell
+.\deploy.ps1
 ```
 
 ---
@@ -375,12 +715,19 @@ sudo chown -R www-data:www-data /var/www/myapp
 
 ### Frontend Frissítés
 
+#### Node.js + npm
+
 ```bash
-# Lokálisan
 cd frontend
 npm run build
+rsync -avz --delete frontend/build/ user@server:/var/www/myapp/public_html/
+```
 
-# Feltöltés
+#### Bun
+
+```bash
+cd frontend
+bun run build
 rsync -avz --delete frontend/build/ user@server:/var/www/myapp/public_html/
 ```
 
