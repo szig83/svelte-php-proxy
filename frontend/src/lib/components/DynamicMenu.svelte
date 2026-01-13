@@ -5,6 +5,7 @@
 	import { quintOut } from 'svelte/easing';
 	import { fetchMenu, type MenuItem, type MenuType } from '$lib/api/menu';
 	import MenuIcon from './MenuIcon.svelte';
+	import ErrorAlert from './ErrorAlert.svelte';
 
 	interface Props {
 		/** Menu type to fetch (protected, admin, etc.) */
@@ -64,30 +65,91 @@
 	}
 
 	/**
+	 * Validate menu item structure
+	 */
+	function isValidMenuItem(item: any): item is MenuItem {
+		return (
+			item &&
+			typeof item === 'object' &&
+			typeof item.label === 'string' &&
+			typeof item.href === 'string' &&
+			typeof item.icon === 'string' &&
+			(!item.children || Array.isArray(item.children))
+		);
+	}
+
+	/**
+	 * Validate and sanitize menu items
+	 * Returns object with valid items and count of invalid items
+	 */
+	function validateMenuItems(items: any[]): { validItems: MenuItem[]; invalidCount: number } {
+		if (!Array.isArray(items)) {
+			throw new Error('Menu items must be an array');
+		}
+
+		let invalidCount = 0;
+
+		const validItems = items.filter((item) => {
+			if (!isValidMenuItem(item)) {
+				console.warn('Invalid menu item:', item);
+				invalidCount++;
+				return false;
+			}
+			if (item.children) {
+				try {
+					const childResult = validateMenuItems(item.children);
+					item.children = childResult.validItems;
+					invalidCount += childResult.invalidCount;
+				} catch (err) {
+					console.warn('Invalid children in menu item:', item, err);
+					item.children = [];
+				}
+			}
+			return true;
+		});
+
+		return { validItems, invalidCount };
+	}
+
+	/**
 	 * Load menu items from the backend
 	 */
 	async function loadMenu() {
 		isLoading = true;
 		error = null;
 
-		const response = await fetchMenu(type);
+		try {
+			const response = await fetchMenu(type);
 
-		if (response.success && response.items) {
-			menuItems = response.items;
+			if (response.success && response.items) {
+				// Validate menu structure before setting
+				const validation = validateMenuItems(response.items);
 
-			// Auto-expand items that have active children
-			const newExpanded = new Set<string>();
-			menuItems.forEach((item) => {
-				if (item.children && isActiveOrChildActive(item, page.url.pathname)) {
-					newExpanded.add(item.href);
+				// If there are invalid items, show error
+				if (validation.invalidCount > 0) {
+					error = `Hiba történt a menü betöltése során!`;
+					menuItems = [];
+				} else {
+					menuItems = validation.validItems;
+
+					// Auto-expand items that have active children
+					const newExpanded = new Set<string>();
+					menuItems.forEach((item) => {
+						if (item.children && isActiveOrChildActive(item, page.url.pathname)) {
+							newExpanded.add(item.href);
+						}
+					});
+					expandedItems = newExpanded;
 				}
-			});
-			expandedItems = newExpanded;
-		} else {
-			error = response.error?.message || 'Failed to load menu';
+			} else {
+				error = response.error?.message || 'Sikertelen adatlekérés';
+			}
+		} catch (err) {
+			console.error('Menu loading error:', err);
+			error = 'Sikertelen adatlekérés - érvénytelen menü struktúra';
+		} finally {
+			isLoading = false;
 		}
-
-		isLoading = false;
 	}
 
 	onMount(() => {
@@ -104,8 +166,11 @@
 	</div>
 {:else if error}
 	<div class="px-3 py-4">
-		<p class="text-xs text-red-400">{error}</p>
-		<button onclick={loadMenu} class="mt-2 text-xs text-slate-400 hover:text-white">
+		<ErrorAlert message={error} />
+		<button
+			onclick={loadMenu}
+			class="mt-3 w-full rounded-lg bg-slate-700 px-3 py-2 text-xs text-slate-300 transition-colors hover:bg-slate-600 hover:text-white"
+		>
 			Újrapróbálás
 		</button>
 	</div>
