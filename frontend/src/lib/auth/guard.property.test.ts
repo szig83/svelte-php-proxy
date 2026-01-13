@@ -50,7 +50,7 @@ vi.mock('./operations', () => ({
 }));
 
 // Import after mocks
-import { guardRoute } from './guard';
+import { guardRoute } from './guard.svelte';
 
 /**
  * Arbitrary for generating valid URL paths

@@ -4,10 +4,11 @@
 	// Követelmények: 5.1, 5.2
 
 	import { onMount } from 'svelte';
-	// Direct imports to avoid circular dependency
-	import { guardRoute, createGuardState } from '$lib/auth/guard';
+	import { guardRoute, createGuardState } from '$lib/auth/guard.svelte';
 	import { getAuthState } from '$lib/auth/store.svelte';
 	import { checkAuth } from '$lib/auth/operations';
+	import Sidebar from '$lib/components/Sidebar.svelte';
+	import Header from '$lib/components/Header.svelte';
 
 	let { children } = $props();
 
@@ -34,26 +35,36 @@
 
 {#if guard.isChecking}
 	<!-- Loading state while checking authentication -->
-	<div class="auth-loading">
-		<p>Betöltés...</p>
+	<div class="flex min-h-screen items-center justify-center bg-gray-100">
+		<div class="flex flex-col items-center gap-3">
+			<div
+				class="h-8 w-8 animate-spin rounded-full border-4 border-blue-200 border-t-blue-600"
+			></div>
+			<p class="text-sm text-gray-500">Betöltés...</p>
+		</div>
 	</div>
 {:else if guard.isAllowed}
-	<!-- Render protected content -->
-	{@render children()}
+	<!-- Protected layout with sidebar -->
+	<div class="flex min-h-screen gap-4 bg-gray-100 p-4">
+		<!-- Sidebar -->
+		<Sidebar />
+
+		<!-- Main content area -->
+		<div class="flex flex-1 flex-col gap-4">
+			<!-- Header -->
+			<Header />
+
+			<!-- Page content -->
+			<main class="flex-1 overflow-auto rounded-2xl bg-white p-6 shadow-sm">
+				<div class="mx-auto max-w-7xl">
+					{@render children()}
+				</div>
+			</main>
+		</div>
+	</div>
 {:else}
-	<!-- Redirecting state (should not be visible long) -->
-	<div class="auth-redirecting">
-		<p>Átirányítás...</p>
+	<!-- Redirecting state -->
+	<div class="flex min-h-screen items-center justify-center bg-gray-100">
+		<p class="text-sm text-gray-500">Átirányítás...</p>
 	</div>
 {/if}
-
-<style>
-	.auth-loading,
-	.auth-redirecting {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		min-height: 200px;
-		color: #666;
-	}
-</style>

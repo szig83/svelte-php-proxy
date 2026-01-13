@@ -5,7 +5,7 @@
 
 	import { onMount } from 'svelte';
 	// Direct imports to avoid circular dependency
-	import { guardRoute, createGuardState } from '$lib/auth/guard';
+	import { guardRoute, createGuardState } from '$lib/auth/guard.svelte';
 	import { getAuthState } from '$lib/auth/store.svelte';
 	import { checkAuth } from '$lib/auth/operations';
 

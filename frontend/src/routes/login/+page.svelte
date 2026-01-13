@@ -1,20 +1,15 @@
 <script lang="ts">
-	// login/+page.svelte
-	// Bejelentkezési oldal
-	// Követelmények: 3.1
-
 	import { login, getAuthState } from '$lib/auth';
-	import { navigateAfterLogin } from '$lib/auth/guard';
-	import { goto } from '$app/navigation';
+	import { navigateAfterLogin } from '$lib/auth/guard.svelte';
 	import { onMount } from 'svelte';
+	import Logo from '$lib/components/Logo.svelte';
+	import Decor from './Decor.svelte';
 
-	// Form state
-	let email = $state('');
+	let userId = $state('');
 	let password = $state('');
 	let isSubmitting = $state(false);
 	let errorMessage = $state('');
 
-	// Redirect if already authenticated
 	onMount(() => {
 		const authState = getAuthState();
 		if (authState.isAuthenticated) {
@@ -24,12 +19,9 @@
 
 	async function handleSubmit(event: Event) {
 		event.preventDefault();
-
-		// Reset error
 		errorMessage = '';
 
-		// Validate inputs
-		if (!email.trim() || !password.trim()) {
+		if (!userId.trim() || !password.trim()) {
 			errorMessage = 'Kérjük, töltse ki az összes mezőt.';
 			return;
 		}
@@ -37,13 +29,10 @@
 		isSubmitting = true;
 
 		try {
-			const result = await login({ email, password });
-
+			const result = await login({ email: userId, password });
 			if (result.success) {
-				// Navigate to redirect URL or home
 				await navigateAfterLogin('/');
 			} else {
-				// Show error message
 				errorMessage = result.error?.message || 'Bejelentkezés sikertelen.';
 			}
 		} catch (error) {
@@ -55,147 +44,102 @@
 </script>
 
 <svelte:head>
-	<title>Bejelentkezés</title>
+	<title>Bejelentkezés - UniBank</title>
 </svelte:head>
 
-<div class="login-container">
-	<div class="login-card">
-		<h1>Bejelentkezés</h1>
+<div class="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+	<div class="flex w-[70%] max-w-[1000px] overflow-hidden rounded-2xl shadow-2xl">
+		<!-- Bal oldal - Form -->
+		<div class="flex w-full flex-col justify-between bg-white p-8 lg:w-2/5 lg:p-10">
+			<!-- Logo -->
+			<Logo />
 
-		{#if errorMessage}
-			<div class="error-message" role="alert">
-				{errorMessage}
-			</div>
-		{/if}
-
-		<form onsubmit={handleSubmit}>
-			<div class="form-group">
-				<label for="email">E-mail cím</label>
-				<input
-					type="email"
-					id="email"
-					bind:value={email}
-					placeholder="pelda@email.com"
-					autocomplete="email"
-					disabled={isSubmitting}
-					required
-				/>
-			</div>
-
-			<div class="form-group">
-				<label for="password">Jelszó</label>
-				<input
-					type="password"
-					id="password"
-					bind:value={password}
-					placeholder="••••••••"
-					autocomplete="current-password"
-					disabled={isSubmitting}
-					required
-				/>
-			</div>
-
-			<button type="submit" class="submit-button" disabled={isSubmitting}>
-				{#if isSubmitting}
-					Bejelentkezés...
-				{:else}
-					Bejelentkezés
+			<!-- Form -->
+			<div class="mx-auto mt-8 w-full max-w-sm">
+				{#if errorMessage}
+					<div
+						class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600"
+						role="alert"
+					>
+						{errorMessage}
+					</div>
 				{/if}
-			</button>
-		</form>
+
+				<form onsubmit={handleSubmit} class="space-y-6">
+					<div>
+						<label for="userId" class="mb-1 block text-xs text-gray-500">Azonosító</label>
+						<input
+							type="text"
+							id="userId"
+							bind:value={userId}
+							placeholder="876546532"
+							autocomplete="username"
+							disabled={isSubmitting}
+							required
+							class="w-full border-b border-gray-300 bg-transparent py-2 text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:outline-none"
+						/>
+					</div>
+
+					<div>
+						<label for="password" class="mb-1 block text-xs text-gray-500">Jelszó</label>
+						<input
+							type="password"
+							id="password"
+							bind:value={password}
+							placeholder="••••••••••••"
+							autocomplete="current-password"
+							disabled={isSubmitting}
+							required
+							class="w-full border-b border-gray-300 bg-transparent py-2 text-gray-800 placeholder-gray-400 focus:border-blue-500 focus:outline-none"
+						/>
+					</div>
+
+					<div class="flex items-center justify-between pt-4">
+						<button type="button" class="text-xs text-gray-500 hover:text-blue-600"
+							>Problémája van a belépéssel?</button
+						>
+						<button
+							type="submit"
+							disabled={isSubmitting}
+							class="rounded-full bg-blue-900 px-8 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+						>
+							{#if isSubmitting}
+								Betöltés...
+							{:else}
+								Belépés
+							{/if}
+						</button>
+					</div>
+				</form>
+			</div>
+
+			<!-- Warning -->
+			<div class="mt-8">
+				<p class="mb-1 text-xs font-semibold text-orange-500">Figyelem!</p>
+				<p class="text-xs leading-relaxed text-gray-400">
+					Online felületünk nem igényel semmilyen további szoftver telepítését. Javasoljuk, hogy
+					védekezzen az ügyfélszolgálattól származónak tűnő rosszindulatú programok ellen.
+				</p>
+				<button
+					class="mt-3 hidden rounded-full border border-gray-300 px-6 py-1.5 text-xs text-gray-500 transition-colors hover:border-gray-400 hover:text-gray-600"
+				>
+					MORE
+				</button>
+			</div>
+		</div>
+
+		<!-- Jobb oldal - Dekoratív háttér -->
+		<div class="relative hidden overflow-hidden lg:block lg:w-3/5">
+			<Decor />
+
+			<!-- Szöveg tartalom -->
+			<div class="relative z-10 flex h-full flex-col items-center justify-center px-8 text-center">
+				<h1 class="mb-4 font-serif text-3xl font-light tracking-wide text-white">
+					Üdvözöljünk az <span class="block font-normal text-white">Új Pillér Egészségpénztár</span> online
+					felületen
+				</h1>
+				<p class="text-base text-gray-300">Fiókja eléréshez kérjük jelentkezzen be.</p>
+			</div>
+		</div>
 	</div>
 </div>
-
-<style>
-	.login-container {
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		min-height: 100vh;
-		padding: 1rem;
-		background-color: #f5f5f5;
-		font-family: system-ui, -apple-system, sans-serif;
-	}
-
-	.login-card {
-		background: white;
-		padding: 2rem;
-		border-radius: 8px;
-		box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-		width: 100%;
-		max-width: 400px;
-	}
-
-	h1 {
-		margin: 0 0 1.5rem;
-		font-size: 1.5rem;
-		text-align: center;
-		color: #333;
-	}
-
-	.error-message {
-		background-color: #fee2e2;
-		border: 1px solid #ef4444;
-		color: #dc2626;
-		padding: 0.75rem;
-		border-radius: 4px;
-		margin-bottom: 1rem;
-		font-size: 0.875rem;
-	}
-
-	.form-group {
-		margin-bottom: 1rem;
-	}
-
-	label {
-		display: block;
-		margin-bottom: 0.5rem;
-		font-weight: 500;
-		color: #374151;
-		font-size: 0.875rem;
-	}
-
-	input {
-		width: 100%;
-		padding: 0.75rem;
-		border: 1px solid #d1d5db;
-		border-radius: 4px;
-		font-size: 1rem;
-		transition: border-color 0.2s, box-shadow 0.2s;
-		box-sizing: border-box;
-	}
-
-	input:focus {
-		outline: none;
-		border-color: #3b82f6;
-		box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-	}
-
-	input:disabled {
-		background-color: #f3f4f6;
-		cursor: not-allowed;
-	}
-
-	.submit-button {
-		width: 100%;
-		padding: 0.75rem;
-		background-color: #3b82f6;
-		color: white;
-		border: none;
-		border-radius: 4px;
-		font-size: 1rem;
-		font-weight: 500;
-		cursor: pointer;
-		transition: background-color 0.2s;
-		margin-top: 0.5rem;
-	}
-
-	.submit-button:hover:not(:disabled) {
-		background-color: #2563eb;
-	}
-
-	.submit-button:disabled {
-		background-color: #9ca3af;
-		cursor: not-allowed;
-	}
-</style>

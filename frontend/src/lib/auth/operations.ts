@@ -53,6 +53,8 @@ async function apiRequest<T>(
 		(headers as Record<string, string>)['X-CSRF-Token'] = csrfToken;
 	}
 
+    console.log(endpoint)
+
 	try {
 		const response = await fetch(`${API_BASE}${endpoint}`, {
 			...options,
@@ -111,6 +113,8 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
 			method: 'POST',
 			body: JSON.stringify(credentials)
 		});
+
+        console.log(response)
 
 		if (response.success && response.data?.user) {
 			// Store CSRF token

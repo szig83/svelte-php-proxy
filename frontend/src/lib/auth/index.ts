@@ -16,10 +16,10 @@ export {
 export { login, logout, checkAuth, refreshUser, getCsrfToken, setCsrfToken } from './operations';
 
 // Re-export guard functions
-export type { GuardOptions } from './guard';
+export type { GuardOptions } from './guard.svelte';
 export {
 	guardRoute,
 	createGuardState,
 	getRedirectUrl,
 	navigateAfterLogin
-} from './guard';
+} from './guard.svelte';

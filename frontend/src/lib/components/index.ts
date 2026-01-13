@@ -2,3 +2,7 @@
 // Components module exports
 
 export { default as PermissionGate } from './PermissionGate.svelte';
+export { default as Logo } from './Logo.svelte';
+export { default as Sidebar } from './Sidebar.svelte';
+export { default as Header } from './Header.svelte';
+export { default as PlaceholderPage } from './PlaceholderPage.svelte';

@@ -3,6 +3,7 @@
 	// Gyökér layout - Auth állapot inicializálás
 	// Követelmények: 1.1, 8.4
 
+	import '../app.css';
 	import { onMount } from 'svelte';
 	import favicon from '$lib/assets/favicon.svg';
 	import { checkAuth, getAuthState } from '$lib/auth';
@@ -43,6 +44,9 @@
 		align-items: center;
 		min-height: 100vh;
 		color: #666;
-		font-family: system-ui, -apple-system, sans-serif;
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
 	}
 </style>

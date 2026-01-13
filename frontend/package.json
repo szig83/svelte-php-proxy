@@ -18,14 +18,20 @@
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.49.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
+		"@tailwindcss/vite": "^4.1.18",
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/svelte": "^5.3.1",
 		"fast-check": "^4.5.3",
 		"jsdom": "^27.4.0",
+		"prettier-plugin-css-order": "^2.2.0",
+		"prettier-plugin-svelte": "^3.4.1",
+		"prettier-plugin-tailwindcss": "^0.7.2",
 		"svelte": "^5.45.6",
 		"svelte-check": "^4.3.4",
+		"tailwindcss": "^4.1.18",
 		"typescript": "^5.9.3",
 		"vite": "^7.2.6",
+		"vite-plugin-devtools-json": "^1.0.0",
 		"vitest": "^4.0.16"
 	}
 }
