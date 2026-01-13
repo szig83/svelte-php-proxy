@@ -96,14 +96,17 @@ class RequestForwarder
         $ch = curl_init();
 
         // Alap beállítások
+        // SSL ellenőrzés beállítása környezet alapján
+        $sslVerify = \Config::getSslVerify();
+
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => $this->timeout,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 3,
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_SSL_VERIFYPEER => $sslVerify,
+            CURLOPT_SSL_VERIFYHOST => $sslVerify ? 2 : 0,
             CURLOPT_HEADER => true,
         ]);
 
@@ -113,6 +116,7 @@ class RequestForwarder
         // Fejlécek összeállítása
         $requestHeaders = $this->buildHeaders($headers, $withAuth);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $requestHeaders);
+
 
         // Kérés végrehajtása
         $response = curl_exec($ch);
@@ -274,14 +278,17 @@ class RequestForwarder
         $ch = curl_init();
 
         // Alap beállítások
+        // SSL ellenőrzés beállítása környezet alapján
+        $sslVerify = \Config::getSslVerify();
+
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_TIMEOUT => $this->timeout,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_MAXREDIRS => 3,
-            CURLOPT_SSL_VERIFYPEER => true,
-            CURLOPT_SSL_VERIFYHOST => 2,
+            CURLOPT_SSL_VERIFYPEER => $sslVerify,
+            CURLOPT_SSL_VERIFYHOST => $sslVerify ? 2 : 0,
             CURLOPT_HEADER => true,
             CURLOPT_POST => true,
         ]);

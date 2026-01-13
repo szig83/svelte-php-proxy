@@ -109,4 +109,13 @@ class Config
     {
         return (int) ($_ENV['RATE_LIMIT_WINDOW'] ?? 60);
     }
+
+    /**
+     * SSL tanúsítvány ellenőrzés
+     * Fejlesztéshez kikapcsolható, production-ben MINDIG true legyen!
+     */
+    public static function getSslVerify(): bool
+    {
+        return filter_var($_ENV['SSL_VERIFY'] ?? true, FILTER_VALIDATE_BOOLEAN);
+    }
 }

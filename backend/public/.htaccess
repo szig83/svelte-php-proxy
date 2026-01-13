@@ -47,11 +47,11 @@ RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>
 
 # PHP fájlok védelme (csak index.php legyen elérhető)
-<FilesMatch "\.php$">
-    <If "%{REQUEST_URI} !~ m#^/api/index\.php$# && %{REQUEST_URI} !~ m#^/api/$# && %{REQUEST_URI} !~ m#^/api$#">
-        Require all denied
-    </If>
-</FilesMatch>
+#<FilesMatch "\.php$">
+#    <If "%{REQUEST_URI} !~ m#^/api/index\.php$# && %{REQUEST_URI} !~ m#^/api/$# && %{REQUEST_URI} !~ m#^/api$#">
+#        Require all denied
+#    </If>
+#</FilesMatch>
 
 # Rejtett fájlok védelme
 <FilesMatch "^\.">

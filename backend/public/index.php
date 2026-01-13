@@ -6,6 +6,7 @@
  * Követelmények: 3.1, 3.3, 3.4
  */
 
+
 declare(strict_types=1);
 
 // Bootstrap betöltése
@@ -19,13 +20,22 @@ require_once dirname(__DIR__) . '/src/TokenRefresher.php';
 require_once dirname(__DIR__) . '/src/RequestForwarder.php';
 require_once dirname(__DIR__) . '/src/CsrfProtection.php';
 require_once dirname(__DIR__) . '/src/RateLimiter.php';
+require_once dirname(__DIR__) . '/src/ErrorLogger.php';
+require_once dirname(__DIR__) . '/src/PhpErrorHandler.php';
 
 use App\Session;
+use App\ErrorLogger;
+use App\PhpErrorHandler;
 use App\Response;
 use App\TokenHandler;
 use App\RequestForwarder;
 use App\CsrfProtection;
 use App\RateLimiter;
+
+// PHP Error Handler regisztrálása (a lehető legkorábban)
+$errorStorageFile = dirname(__DIR__) . '/data/errors.json';
+$globalErrorLogger = new ErrorLogger($errorStorageFile);
+PhpErrorHandler::register($globalErrorLogger);
 
 // Session indítása
 Session::start();
@@ -53,11 +63,18 @@ if ($method === 'OPTIONS') {
     exit;
 }
 
+
+//trigger_error('Teszt hiba', E_USER_WARNING);
+
+
 // Router
 try {
     // Auth végpontok
     if (str_starts_with($path, '/auth/')) {
         handleAuthRoutes($path, $method);
+    } elseif (str_starts_with($path, '/errors')) {
+        // Error logging végpontok
+        handleErrorRoutes($path, $method);
     } else {
         // Minden más kérés továbbítása a külső API-nak
         handleProxyRoute($path, $method);
@@ -277,6 +294,130 @@ function handleCsrf(): void
     Response::success([
         'csrf_token' => CsrfProtection::getToken()
     ]);
+}
+
+/**
+ * Error logging végpontok kezelése
+ * Követelmények: 5.1, 5.4, 6.1
+ */
+function handleErrorRoutes(string $path, string $method): void
+{
+    // Error logger inicializálása
+    $storageFile = dirname(__DIR__) . '/data/errors.json';
+    $errorLogger = new ErrorLogger($storageFile);
+
+    // Útvonal elemzése - /errors vagy /errors/{id}
+    $pathParts = explode('/', trim($path, '/'));
+
+    switch ($path) {
+        case '/errors':
+            if ($method === 'POST') {
+                // Új hiba naplózása - nem igényel autentikációt
+                handleLogError($errorLogger);
+            } elseif ($method === 'GET') {
+                // Hibák listázása - admin jogosultság szükséges
+                requireAdminAuth();
+                handleGetErrors($errorLogger);
+            } else {
+                Response::error(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+            }
+            break;
+
+        default:
+            // /errors/{id} útvonal kezelése
+            if (count($pathParts) === 2 && $pathParts[0] === 'errors') {
+                if ($method !== 'GET') {
+                    Response::error(405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
+                }
+                requireAdminAuth();
+                handleGetError($errorLogger, $pathParts[1]);
+            } else {
+                Response::notFound('Error endpoint not found');
+            }
+    }
+}
+
+/**
+ * Új hiba naplózása
+ * Követelmények: 5.1, 5.4
+ */
+function handleLogError(ErrorLogger $errorLogger): void
+{
+    // Request body beolvasása
+    $input = file_get_contents('php://input');
+    $data = json_decode($input, true);
+
+    if ($data === null) {
+        Response::badRequest('Invalid JSON body');
+    }
+
+    // Alapértelmezett severity ha nincs megadva
+    if (!isset($data['severity'])) {
+        $data['severity'] = 'error';
+    }
+
+    // Alapértelmezett timestamp ha nincs megadva
+    if (!isset($data['timestamp'])) {
+        $data['timestamp'] = date('c');
+    }
+
+    try {
+        $id = $errorLogger->log($data);
+        Response::success(['id' => $id], 201);
+    } catch (\InvalidArgumentException $e) {
+        Response::badRequest($e->getMessage());
+    }
+}
+
+/**
+ * Hibák listázása szűrőkkel
+ * Követelmények: 6.1
+ */
+function handleGetErrors(ErrorLogger $errorLogger): void
+{
+    $filters = [
+        'type' => $_GET['type'] ?? null,
+        'dateFrom' => $_GET['dateFrom'] ?? null,
+        'dateTo' => $_GET['dateTo'] ?? null,
+        'page' => $_GET['page'] ?? 1,
+        'pageSize' => $_GET['pageSize'] ?? 20
+    ];
+
+    // Üres értékek eltávolítása
+    $filters = array_filter($filters, fn($v) => $v !== null && $v !== '');
+
+    $result = $errorLogger->getErrors($filters);
+
+    Response::success($result);
+}
+
+/**
+ * Egy hiba lekérdezése ID alapján
+ * Követelmények: 6.3
+ */
+function handleGetError(ErrorLogger $errorLogger, string $id): void
+{
+    $error = $errorLogger->getError($id);
+
+    if ($error === null) {
+        Response::notFound('Error not found');
+    }
+
+    Response::success($error);
+}
+
+/**
+ * Admin jogosultság ellenőrzése
+ */
+function requireAdminAuth(): void
+{
+    // Ellenőrizzük, hogy be van-e jelentkezve
+    if (!TokenHandler::isAuthenticated()) {
+        Response::unauthorized('Not authenticated');
+    }
+
+    // TODO: Admin jogosultság ellenőrzése a felhasználó szerepköre alapján
+    // Jelenleg minden bejelentkezett felhasználó hozzáfér
 }
 
 /**

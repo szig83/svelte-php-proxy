@@ -17,8 +17,6 @@ namespace Tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use App\RequestForwarder;
-use ReflectionClass;
 
 class FileUploadPropertyTest extends TestCase
 {
@@ -78,13 +76,7 @@ class FileUploadPropertyTest extends TestCase
                 ]
             ];
 
-            // Build multipart data using reflection to access private method
-            $forwarder = new RequestForwarder('https://api.example.com', 30, null);
-            $reflection = new ReflectionClass($forwarder);
-            $method = $reflection->getMethod('buildMultipartData');
-            $method->setAccessible(true);
-
-            // Mock is_uploaded_file for testing
+            // Build multipart data for testing
             $result = $this->buildMultipartDataForTest($files, []);
 
             // Verify file metadata is preserved

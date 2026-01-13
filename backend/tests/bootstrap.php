@@ -81,3 +81,4 @@ require_once dirname(__DIR__) . '/src/TokenHandler.php';
 require_once dirname(__DIR__) . '/src/TokenRefresher.php';
 require_once dirname(__DIR__) . '/src/RequestForwarder.php';
 require_once dirname(__DIR__) . '/src/Response.php';
+require_once dirname(__DIR__) . '/src/ErrorLogger.php';
