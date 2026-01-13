@@ -173,6 +173,15 @@
 			d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
 		/>
 	</svg>
+{:else if icon === 'debug'}
+	<svg class={sizeClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+		<path
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			stroke-width="2"
+			d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+		/>
+	</svg>
 {:else if icon === 'settings' || icon === 'cog'}
 	<svg class={sizeClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
 		<path
@@ -212,12 +221,7 @@
 	</svg>
 {:else}
 	<!-- Default icon -->
-	<svg class={sizeClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-		<path
-			stroke-linecap="round"
-			stroke-linejoin="round"
-			stroke-width="1.5"
-			d="M13 10V3L4 14h7v7l9-11h-7z"
-		/>
+	<svg class={sizeClass} fill="currentColor" viewBox="0 0 24 24">
+		<circle cx="12" cy="12" r="4" />
 	</svg>
 {/if}

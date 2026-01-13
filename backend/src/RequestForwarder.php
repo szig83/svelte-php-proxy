@@ -124,7 +124,6 @@ class RequestForwarder
         $errno = curl_errno($ch);
 
         if ($errno !== 0) {
-            curl_close($ch);
             return [
                 'status' => 0,
                 'body' => null,
@@ -138,7 +137,6 @@ class RequestForwarder
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
 
-        curl_close($ch);
 
         $responseHeaders = substr($response, 0, $headerSize);
         $responseBody = substr($response, $headerSize);
@@ -307,7 +305,6 @@ class RequestForwarder
         $errno = curl_errno($ch);
 
         if ($errno !== 0) {
-            curl_close($ch);
             return [
                 'status' => 0,
                 'body' => null,
@@ -321,7 +318,6 @@ class RequestForwarder
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
 
-        curl_close($ch);
 
         $responseHeaders = substr($response, 0, $headerSize);
         $responseBody = substr($response, $headerSize);

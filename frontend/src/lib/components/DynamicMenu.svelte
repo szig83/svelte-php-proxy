@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
+	import { slide } from 'svelte/transition';
+	import { quintOut } from 'svelte/easing';
 	import { fetchMenu, type MenuItem, type MenuType } from '$lib/api/menu';
 	import MenuIcon from './MenuIcon.svelte';
 
@@ -134,7 +136,7 @@
 							<span class="flex-1 truncate text-left">{item.label}</span>
 							<!-- Expand/collapse indicator -->
 							<span
-								class="flex h-4 w-4 shrink-0 items-center justify-center text-slate-500 transition-transform {expanded
+								class="flex h-4 w-4 shrink-0 items-center justify-center text-slate-500 transition-transform duration-300 {expanded
 									? 'rotate-90'
 									: ''}"
 							>
@@ -149,9 +151,12 @@
 							</span>
 						</button>
 
-						<!-- Nested children menu items -->
+						<!-- Nested children menu items with slide animation -->
 						{#if expanded}
-							<ul class="mt-0.5 ml-7 space-y-0.5 border-l border-slate-600 pl-3">
+							<ul
+								class="mt-0.5 ml-7 space-y-0.5 overflow-hidden border-l border-slate-600 pl-3"
+								transition:slide={{ duration: 300, easing: quintOut }}
+							>
 								{#each item.children as child}
 									{@const childActive = isActive(child.href, page.url.pathname)}
 									{@const childHasChildren = child.children && child.children.length > 0}
@@ -175,7 +180,7 @@
 												</span>
 												<span class="flex-1 truncate text-left">{child.label}</span>
 												<span
-													class="flex h-3 w-3 shrink-0 items-center justify-center text-slate-500 transition-transform {childExpanded
+													class="flex h-3 w-3 shrink-0 items-center justify-center text-slate-500 transition-transform duration-300 {childExpanded
 														? 'rotate-90'
 														: ''}"
 												>
@@ -195,9 +200,12 @@
 												</span>
 											</button>
 
-											<!-- Support for deeper nesting (recursive) -->
+											<!-- Support for deeper nesting with slide animation -->
 											{#if childExpanded && child.children}
-												<ul class="mt-0.5 ml-5 space-y-0.5 border-l border-slate-600/50 pl-2">
+												<ul
+													class="mt-0.5 ml-5 space-y-0.5 overflow-hidden border-l border-slate-600/50 pl-2"
+													transition:slide={{ duration: 250, easing: quintOut }}
+												>
 													{#each child.children as grandchild}
 														{@const grandchildActive = isActive(grandchild.href, page.url.pathname)}
 														<li>

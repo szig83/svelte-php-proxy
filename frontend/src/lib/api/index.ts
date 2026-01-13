@@ -2,4 +2,5 @@
 // API client exports
 
 export { fetchMenu, type MenuItem, type MenuType, type MenuResponse } from './menu';
-export { apiRequest } from './client';
+export { default as api } from './client';
+export type { ApiResponse, ApiError, RequestOptions } from './client';

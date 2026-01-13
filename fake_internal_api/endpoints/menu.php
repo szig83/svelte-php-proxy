@@ -177,6 +177,18 @@ $menus = [
                     'icon' => 'file-text'
                 ]
             ]
+        ],
+        [
+            'label' => 'Debug',
+            'href' => '#',
+            'icon' => 'debug',
+            'children' => [
+                [
+                    'label' => 'Teszt hibák',
+                    'href' => '/admin/test-errors',
+                    'icon' => 'bug'
+                ]
+            ]
         ]
     ]
 ];
