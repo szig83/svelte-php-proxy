@@ -165,7 +165,8 @@ $menus = [
                 [
                     'label' => 'Hibák',
                     'href' => '/admin/errors',
-                    'icon' => 'bug'
+                    'icon' => 'alert',
+                    'icon_type' => 'lucide'
                 ],
                 [
                     'label' => 'Beállítások',

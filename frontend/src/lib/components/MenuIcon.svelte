@@ -1,11 +1,12 @@
 <script lang="ts">
 	// Import Lucide icons here manually as needed
 	// Example:
-	import { Users } from 'lucide-svelte';
+	import { Users, TriangleAlert } from 'lucide-svelte';
 
 	// Icon registry - add imported Lucide icons here
 	const lucideIcons: Record<string, any> = {
-		users: Users
+		users: Users,
+		alert: TriangleAlert
 	};
 
 	interface Props {
@@ -19,7 +20,7 @@
 
 	let { icon, type = 'custom', size = 'md' }: Props = $props();
 
-	const sizeClass = $derived(size === 'xs' ? 'h-2 w-2' : size === 'sm' ? 'h-3 w-3' : 'h-4 w-4');
+	const sizeClass = $derived(size === 'xs' ? 'h-3 w-3' : size === 'sm' ? 'h-4 w-4' : 'h-5 w-5');
 
 	const LucideIcon = $derived(type === 'lucide' ? lucideIcons[icon] : null);
 </script>

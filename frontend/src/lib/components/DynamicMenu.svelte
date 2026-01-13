@@ -25,8 +25,9 @@
 	 * Check if a menu item is active based on current path
 	 */
 	function isActive(href: string, currentPath: string): boolean {
-		if (href === '/') {
-			return currentPath === '/';
+		// Exact match for root paths
+		if (href === '/' || href === '/admin') {
+			return currentPath === href;
 		}
 		return currentPath === href || currentPath.startsWith(href + '/');
 	}
@@ -160,7 +161,7 @@
 {#if isLoading}
 	<div class="px-3 py-4 text-center">
 		<div
-			class="inline-block h-4 w-4 animate-spin rounded-full border-2 border-slate-400 border-t-transparent"
+			class="inline-block h-5 w-5 animate-spin rounded-full border-2 border-slate-400 border-t-transparent"
 		></div>
 		<p class="mt-2 text-xs text-slate-400">Menü betöltése...</p>
 	</div>
@@ -180,19 +181,22 @@
 			{#each menuItems as item}
 				{@const active = isActive(item.href, page.url.pathname)}
 				{@const hasChildren = item.children && item.children.length > 0}
+				{@const activeOrChildActive = hasChildren
+					? isActiveOrChildActive(item, page.url.pathname)
+					: active}
 				{@const expanded = isExpanded(item.href)}
 				<li>
 					{#if hasChildren}
 						<!-- Parent item with children - clickable to expand/collapse -->
 						<button
 							onclick={() => toggleExpanded(item.href)}
-							class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors
-								{active
+							class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[14px] transition-colors
+								{activeOrChildActive
 								? 'bg-white/10 font-medium text-white'
 								: 'text-gray-400/90 hover:bg-white/5 hover:text-white'}"
 						>
 							<span
-								class="flex h-4 w-4 shrink-0 items-center justify-center {active
+								class="flex h-5 w-5 shrink-0 items-center justify-center {activeOrChildActive
 									? 'text-blue-400'
 									: 'text-slate-500'}"
 							>
@@ -201,7 +205,7 @@
 							<span class="flex-1 truncate text-left">{item.label}</span>
 							<!-- Expand/collapse indicator -->
 							<span
-								class="flex h-4 w-4 shrink-0 items-center justify-center text-slate-500 transition-transform duration-300 {expanded
+								class="flex h-5 w-5 shrink-0 items-center justify-center text-slate-500 transition-transform duration-300 {expanded
 									? 'rotate-90'
 									: ''}"
 							>
@@ -225,19 +229,22 @@
 								{#each item.children as child}
 									{@const childActive = isActive(child.href, page.url.pathname)}
 									{@const childHasChildren = child.children && child.children.length > 0}
+									{@const childActiveOrChildActive = childHasChildren
+										? isActiveOrChildActive(child, page.url.pathname)
+										: childActive}
 									{@const childExpanded = isExpanded(child.href)}
 									<li>
 										{#if childHasChildren}
 											<!-- Second level parent with children -->
 											<button
 												onclick={() => toggleExpanded(child.href)}
-												class="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-xs transition-colors
-													{childActive
+												class="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-[13px] transition-colors
+													{childActiveOrChildActive
 													? 'bg-white/10 font-medium text-white'
 													: 'text-gray-400/80 hover:bg-white/5 hover:text-white'}"
 											>
 												<span
-													class="flex h-3 w-3 shrink-0 items-center justify-center {childActive
+													class="flex h-4 w-4 shrink-0 items-center justify-center {childActiveOrChildActive
 														? 'text-blue-400'
 														: 'text-slate-500'}"
 												>
@@ -245,7 +252,7 @@
 												</span>
 												<span class="flex-1 truncate text-left">{child.label}</span>
 												<span
-													class="flex h-3 w-3 shrink-0 items-center justify-center text-slate-500 transition-transform duration-300 {childExpanded
+													class="flex h-4 w-4 shrink-0 items-center justify-center text-slate-500 transition-transform duration-300 {childExpanded
 														? 'rotate-90'
 														: ''}"
 												>
@@ -276,13 +283,13 @@
 														<li>
 															<a
 																href={grandchild.href}
-																class="flex items-center gap-2 rounded-lg px-2 py-1 text-xs transition-colors
+																class="flex items-center gap-2 rounded-lg px-2 py-1 text-[13px] transition-colors
 																	{grandchildActive
 																	? 'bg-white/10 font-medium text-white'
 																	: 'text-gray-400/70 hover:bg-white/5 hover:text-white'}"
 															>
 																<span
-																	class="flex h-2 w-2 shrink-0 items-center justify-center {grandchildActive
+																	class="flex h-3 w-3 shrink-0 items-center justify-center {grandchildActive
 																		? 'text-blue-400'
 																		: 'text-slate-500'}"
 																>
@@ -308,7 +315,7 @@
 													: 'text-gray-400/80 hover:bg-white/5 hover:text-white'}"
 											>
 												<span
-													class="flex h-3 w-3 shrink-0 items-center justify-center {childActive
+													class="flex h-4 w-4 shrink-0 items-center justify-center {childActive
 														? 'text-blue-400'
 														: 'text-slate-500'}"
 												>
@@ -325,13 +332,13 @@
 						<!-- Leaf item without children - regular link -->
 						<a
 							href={item.href}
-							class="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors
+							class="flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] transition-colors
 								{active
 								? 'bg-white/10 font-medium text-white'
 								: 'text-gray-400/90 hover:bg-white/5 hover:text-white'}"
 						>
 							<span
-								class="flex h-4 w-4 shrink-0 items-center justify-center {active
+								class="flex h-5 w-5 shrink-0 items-center justify-center {active
 									? 'text-blue-400'
 									: 'text-slate-500'}"
 							>
