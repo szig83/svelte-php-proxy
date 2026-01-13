@@ -7,8 +7,7 @@
 	import { guardRoute, createGuardState } from '$lib/auth/guard.svelte';
 	import { getAuthState } from '$lib/auth/store.svelte';
 	import { checkAuth } from '$lib/auth/operations';
-	import Sidebar from '$lib/components/Sidebar.svelte';
-	import Header from '$lib/components/Header.svelte';
+	import ProtectedLayout from '$lib/components/ProtectedLayout.svelte';
 
 	let { children } = $props();
 
@@ -46,25 +45,9 @@
 	</div>
 {:else if guard.isAllowed}
 	<!-- Protected layout with sidebar - layered design -->
-	<div class="flex h-screen bg-slate-700">
-		<!-- Sidebar - appears as background layer -->
-		<Sidebar />
-
-		<!-- Main content area - appears as foreground layer, edge to edge -->
-		<div class="-ml-6 flex flex-1 flex-col overflow-hidden rounded-l-3xl bg-slate-100 shadow-xl">
-			<!-- Header -->
-			<div class="shrink-0 px-6 pt-4">
-				<Header />
-			</div>
-
-			<!-- Page content - scrollable -->
-			<main class="flex-1 overflow-y-auto p-6">
-				<div class="mx-auto max-w-7xl">
-					{@render children()}
-				</div>
-			</main>
-		</div>
-	</div>
+	<ProtectedLayout>
+		{@render children()}
+	</ProtectedLayout>
 {:else}
 	<!-- Redirecting state -->
 	<div class="flex min-h-screen items-center justify-center bg-gray-100">

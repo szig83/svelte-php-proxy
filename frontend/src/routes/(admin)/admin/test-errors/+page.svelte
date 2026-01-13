@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { logError, logWarning, logInfo, logApiError } from '$lib/errors';
 
+	// Error logging tests
 	function triggerJsError() {
 		// @ts-ignore - szándékos hiba
 		const obj = null;
@@ -54,10 +55,24 @@
 </script>
 
 <div class="container">
-	<h1>🧪 Hibanaplózás Tesztelése</h1>
+	<h1>🧪 Hiba Tesztelés</h1>
 	<p>
-		Ezekkel a gombokkal különböző típusú hibákat tudsz generálni a naplózó rendszer teszteléséhez.
+		Ezekkel a gombokkal különböző típusú hibákat tudsz generálni a hibaoldal és a naplózó rendszer
+		teszteléséhez.
 	</p>
+
+	<div class="section">
+		<h2>Hibaoldal Tesztelése</h2>
+		<p class="description">
+			Kattints ezekre a linkekre, hogy lásd a különböző hibakódok megjelenítését.
+		</p>
+		<div class="buttons">
+			<a href="/admin/test-errors/404" class="error"> 🔍 404 - Not Found </a>
+			<a href="/admin/test-errors/403" class="error"> 🚫 403 - Forbidden </a>
+			<a href="/admin/test-errors/500" class="error"> ⚠️ 500 - Server Error </a>
+			<a href="/admin/test-errors/400" class="error"> ❌ 400 - Bad Request </a>
+		</div>
+	</div>
 
 	<div class="section">
 		<h2>Automatikusan Elkapott Hibák</h2>
@@ -138,7 +153,10 @@
 	}
 
 	button,
-	.link-button {
+	.link-button,
+	a.error,
+	a.warning,
+	a.info {
 		display: inline-block;
 		transition:
 			transform 0.1s,
@@ -153,16 +171,23 @@
 	}
 
 	button:hover,
-	.link-button:hover {
+	.link-button:hover,
+	a.error:hover,
+	a.warning:hover,
+	a.info:hover {
 		transform: translateY(-2px);
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 	}
 
-	button:active {
+	button:active,
+	a.error:active,
+	a.warning:active,
+	a.info:active {
 		transform: translateY(0);
 	}
 
-	.error {
+	.error,
+	a.error {
 		background: #ef4444;
 		color: white;
 	}

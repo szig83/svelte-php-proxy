@@ -196,7 +196,7 @@
 									? 'text-blue-400'
 									: 'text-slate-500'}"
 							>
-								<MenuIcon icon={item.icon} />
+								<MenuIcon icon={item.icon} type={item.icon_type} />
 							</span>
 							<span class="flex-1 truncate text-left">{item.label}</span>
 							<!-- Expand/collapse indicator -->
@@ -241,7 +241,7 @@
 														? 'text-blue-400'
 														: 'text-slate-500'}"
 												>
-													<MenuIcon icon={child.icon} size="sm" />
+													<MenuIcon icon={child.icon} type={child.icon_type} size="sm" />
 												</span>
 												<span class="flex-1 truncate text-left">{child.label}</span>
 												<span
@@ -286,7 +286,11 @@
 																		? 'text-blue-400'
 																		: 'text-slate-500'}"
 																>
-																	<MenuIcon icon={grandchild.icon} size="xs" />
+																	<MenuIcon
+																		icon={grandchild.icon}
+																		type={grandchild.icon_type}
+																		size="xs"
+																	/>
 																</span>
 																<span class="truncate">{grandchild.label}</span>
 															</a>
@@ -308,7 +312,7 @@
 														? 'text-blue-400'
 														: 'text-slate-500'}"
 												>
-													<MenuIcon icon={child.icon} size="sm" />
+													<MenuIcon icon={child.icon} type={child.icon_type} size="sm" />
 												</span>
 												<span class="truncate">{child.label}</span>
 											</a>
@@ -331,7 +335,7 @@
 									? 'text-blue-400'
 									: 'text-slate-500'}"
 							>
-								<MenuIcon icon={item.icon} />
+								<MenuIcon icon={item.icon} type={item.icon_type} />
 							</span>
 							<span class="truncate">{item.label}</span>
 						</a>

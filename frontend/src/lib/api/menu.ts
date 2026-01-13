@@ -14,6 +14,8 @@ export interface MenuItem {
 	href: string;
 	/** Icon identifier */
 	icon: string;
+	/** Icon type: 'custom' or 'lucide' */
+	icon_type?: 'custom' | 'lucide';
 	/** Optional nested children menu items */
 	children?: MenuItem[];
 }

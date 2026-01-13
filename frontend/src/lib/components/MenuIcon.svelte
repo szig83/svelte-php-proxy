@@ -1,17 +1,37 @@
 <script lang="ts">
+	// Import Lucide icons here manually as needed
+	// Example:
+	import { Users } from 'lucide-svelte';
+
+	// Icon registry - add imported Lucide icons here
+	const lucideIcons: Record<string, any> = {
+		users: Users
+	};
+
 	interface Props {
 		/** Icon identifier */
 		icon: string;
+		/** Icon type: 'custom' for built-in SVGs or 'lucide' for Lucide icons */
+		type?: 'custom' | 'lucide';
 		/** Icon size */
 		size?: 'xs' | 'sm' | 'md';
 	}
 
-	let { icon, size = 'md' }: Props = $props();
+	let { icon, type = 'custom', size = 'md' }: Props = $props();
 
 	const sizeClass = $derived(size === 'xs' ? 'h-2 w-2' : size === 'sm' ? 'h-3 w-3' : 'h-4 w-4');
+
+	const LucideIcon = $derived(type === 'lucide' ? lucideIcons[icon] : null);
 </script>
 
-{#if icon === 'wallet'}
+{#if type === 'lucide' && LucideIcon}
+	<LucideIcon class={sizeClass} />
+{:else if type === 'lucide'}
+	<!-- Fallback if Lucide icon not found in registry -->
+	<svg class={sizeClass} fill="currentColor" viewBox="0 0 24 24">
+		<circle cx="12" cy="12" r="4" />
+	</svg>
+{:else if icon === 'wallet'}
 	<svg class={sizeClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
 		<path
 			stroke-linecap="round"

@@ -8,3 +8,5 @@ export { default as Header } from './Header.svelte';
 export { default as PlaceholderPage } from './PlaceholderPage.svelte';
 export { default as DynamicMenu } from './DynamicMenu.svelte';
 export { default as MenuIcon } from './MenuIcon.svelte';
+export { default as ErrorPage } from './ErrorPage.svelte';
+export { default as ProtectedLayout } from './ProtectedLayout.svelte';

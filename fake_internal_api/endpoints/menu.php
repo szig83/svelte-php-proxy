@@ -149,7 +149,8 @@ $menus = [
         [
             'label' => 'Felhasználók',
             'href' => '/admin/users',
-            'icon' => 'users'
+            'icon' => 'users',
+            'icon_type' => 'lucide'
         ],
         [
             'label' => 'Statisztikák',
