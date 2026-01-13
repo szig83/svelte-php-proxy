@@ -14,7 +14,8 @@ vi.mock('../auth/store.svelte', () => ({
 		clearAuth: vi.fn(),
 		setLoading: vi.fn(),
 		setUser: vi.fn()
-	}
+	},
+	getUser: vi.fn(() => null)
 }));
 
 vi.mock('../auth/operations', () => ({

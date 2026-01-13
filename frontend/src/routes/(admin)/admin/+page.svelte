@@ -26,6 +26,7 @@
 			<a href="/dashboard" class="nav-link">Dashboard</a>
 			<a href="/admin/users" class="nav-link">Felhasználók</a>
 			<a href="/admin/stats" class="nav-link">Statisztikák</a>
+			<a href="/admin/errors" class="nav-link">Hibák</a>
 			<button onclick={handleLogout} class="logout-button">Kijelentkezés</button>
 		</nav>
 	</header>
@@ -48,6 +49,12 @@
 				<h3>Statisztikák</h3>
 				<p>Rendszer statisztikák és jelentések megtekintése</p>
 			</a>
+
+			<a href="/admin/errors" class="card">
+				<div class="card-icon">🐛</div>
+				<h3>Hibák</h3>
+				<p>Frontend hibák megtekintése és elemzése</p>
+			</a>
 		</div>
 
 		<section class="permissions-section">
@@ -63,25 +70,28 @@
 
 <style>
 	.admin-container {
-		min-height: 100vh;
-		font-family: system-ui, -apple-system, sans-serif;
 		background-color: #111827;
+		min-height: 100vh;
 		color: white;
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
 	}
 
 	.header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 1rem 2rem;
-		background-color: #1f2937;
 		border-bottom: 1px solid #374151;
+		background-color: #1f2937;
+		padding: 1rem 2rem;
 	}
 
 	.header h1 {
 		margin: 0;
-		font-size: 1.25rem;
 		color: #f9fafb;
+		font-size: 1.25rem;
 	}
 
 	.nav {
@@ -91,10 +101,10 @@
 	}
 
 	.nav-link {
-		color: #9ca3af;
-		text-decoration: none;
-		font-size: 0.875rem;
 		transition: color 0.2s;
+		color: #9ca3af;
+		font-size: 0.875rem;
+		text-decoration: none;
 	}
 
 	.nav-link:hover {
@@ -102,32 +112,32 @@
 	}
 
 	.logout-button {
-		background: none;
-		border: 1px solid #6b7280;
-		color: #d1d5db;
-		padding: 0.5rem 1rem;
-		border-radius: 4px;
-		cursor: pointer;
-		font-size: 0.875rem;
 		transition: all 0.2s;
+		cursor: pointer;
+		border: 1px solid #6b7280;
+		border-radius: 4px;
+		background: none;
+		padding: 0.5rem 1rem;
+		color: #d1d5db;
+		font-size: 0.875rem;
 	}
 
 	.logout-button:hover {
-		background-color: #374151;
 		border-color: #9ca3af;
+		background-color: #374151;
 	}
 
 	.main {
-		max-width: 1000px;
 		margin: 0 auto;
 		padding: 2rem;
+		max-width: 1000px;
 	}
 
 	.welcome-section {
+		margin-bottom: 2rem;
+		border-radius: 8px;
 		background: linear-gradient(135deg, #3b82f6, #8b5cf6);
 		padding: 2rem;
-		border-radius: 8px;
-		margin-bottom: 2rem;
 	}
 
 	.welcome-section h2 {
@@ -136,8 +146,8 @@
 	}
 
 	.welcome-section p {
-		margin: 0;
 		opacity: 0.9;
+		margin: 0;
 	}
 
 	.cards-grid {
@@ -148,13 +158,15 @@
 	}
 
 	.card {
+		transition:
+			transform 0.2s,
+			box-shadow 0.2s;
+		border: 1px solid #374151;
+		border-radius: 8px;
 		background-color: #1f2937;
 		padding: 1.5rem;
-		border-radius: 8px;
-		text-decoration: none;
 		color: white;
-		transition: transform 0.2s, box-shadow 0.2s;
-		border: 1px solid #374151;
+		text-decoration: none;
 	}
 
 	.card:hover {
@@ -164,8 +176,8 @@
 	}
 
 	.card-icon {
-		font-size: 2rem;
 		margin-bottom: 0.75rem;
+		font-size: 2rem;
 	}
 
 	.card h3 {
@@ -180,16 +192,16 @@
 	}
 
 	.permissions-section {
+		border: 1px solid #374151;
+		border-radius: 8px;
 		background-color: #1f2937;
 		padding: 1.5rem;
-		border-radius: 8px;
-		border: 1px solid #374151;
 	}
 
 	.permissions-section h3 {
 		margin: 0 0 1rem;
-		font-size: 1rem;
 		color: #d1d5db;
+		font-size: 1rem;
 	}
 
 	.permissions-list {
@@ -199,11 +211,11 @@
 	}
 
 	.permission-badge {
-		background-color: #374151;
-		color: #d1d5db;
-		padding: 0.25rem 0.75rem;
 		border-radius: 9999px;
-		font-size: 0.75rem;
+		background-color: #374151;
+		padding: 0.25rem 0.75rem;
+		color: #d1d5db;
 		font-weight: 500;
+		font-size: 0.75rem;
 	}
 </style>

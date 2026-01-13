@@ -1,12 +1,15 @@
 <script lang="ts">
 	// +layout.svelte
-	// Gyökér layout - Auth állapot inicializálás
-	// Követelmények: 1.1, 8.4
+	// Gyökér layout - Auth állapot és Error Logger inicializálás
+	// Követelmények: 1.1, 1.2, 1.4, 8.1, 8.2, 8.4
 
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import favicon from '$lib/assets/favicon.svg';
 	import { checkAuth, getAuthState } from '$lib/auth';
+	import { initErrorLogger, getErrorLogger } from '$lib/errors/logger';
+	import { setupGlobalErrorHandlers } from '$lib/errors/handlers';
+	import { dev } from '$app/environment';
 
 	let { children } = $props();
 
@@ -14,6 +17,22 @@
 	let authInitialized = $state(false);
 
 	onMount(async () => {
+		// Initialize Error Logger on app load
+		// Követelmények: 8.1, 8.2, 8.4
+		initErrorLogger({
+			enabled: true,
+			endpoint: '/api/errors',
+			isDevelopment: dev,
+			rateLimit: {
+				maxErrors: 10,
+				windowMs: 60000
+			}
+		});
+
+		// Register global error handlers
+		// Követelmények: 1.1, 1.2, 1.4
+		setupGlobalErrorHandlers(getErrorLogger());
+
 		// Initialize auth state on app load
 		// Követelmények: 8.4 - AMIKOR a Frontend betöltődik, ellenőrizni kell az auth állapotot
 		const authState = getAuthState();

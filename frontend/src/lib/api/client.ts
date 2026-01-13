@@ -1,9 +1,10 @@
 // src/lib/api/client.ts
 // Egységes API kliens a PHP proxy-val való kommunikációhoz
-// Követelmények: 7.1, 7.2, 7.3, 7.4, 7.5, 4.5
+// Követelmények: 7.1, 7.2, 7.3, 7.4, 7.5, 4.5, 2.1, 2.2, 2.3
 
 import { getCsrfToken, setCsrfToken } from '../auth/operations';
 import { authStateHelpers } from '../auth/store.svelte';
+import { logApiError } from '../errors';
 
 /**
  * API base URL for the PHP proxy
@@ -103,6 +104,7 @@ function mapStatusToErrorCode(status: number): ErrorCode {
 
 /**
  * Core fetch wrapper with error handling and CSRF support
+ * Követelmények: 2.1, 2.2, 2.3 - API hiba naplózás
  */
 async function request<T>(
 	method: string,
@@ -144,13 +146,16 @@ async function request<T>(
 		// Handle 401 Unauthorized - redirect to login
 		if (response.status === 401) {
 			handleUnauthorized();
-			return {
+			const errorResponse: ApiResponse<T> = {
 				success: false,
 				error: {
 					code: ErrorCode.UNAUTHORIZED,
 					message: 'Session expired. Please log in again.'
 				}
 			};
+			// Log API error (Követelmény 2.1)
+			logApiError(endpoint, response.status, errorResponse.error!);
+			return errorResponse;
 		}
 
 		// Parse response
@@ -159,13 +164,16 @@ async function request<T>(
 			data = await response.json();
 		} catch {
 			// If response is not JSON, create error response
-			return {
+			const errorResponse: ApiResponse<T> = {
 				success: false,
 				error: {
 					code: mapStatusToErrorCode(response.status),
 					message: response.statusText || 'An error occurred'
 				}
 			};
+			// Log API error (Követelmény 2.1)
+			logApiError(endpoint, response.status, errorResponse.error!);
+			return errorResponse;
 		}
 
 		// Update CSRF token if provided in response
@@ -175,25 +183,31 @@ async function request<T>(
 
 		// Handle error responses
 		if (!response.ok) {
-			return {
+			const errorResponse: ApiResponse<T> = {
 				success: false,
 				error: data.error || {
 					code: mapStatusToErrorCode(response.status),
 					message: 'An error occurred'
 				}
 			};
+			// Log API error (Követelmény 2.1, 2.3)
+			logApiError(endpoint, response.status, errorResponse.error!);
+			return errorResponse;
 		}
 
 		return data;
 	} catch (error) {
-		// Network error or other fetch failure
-		return {
+		// Network error or other fetch failure (Követelmény 2.2)
+		const errorResponse: ApiResponse<T> = {
 			success: false,
 			error: {
 				code: ErrorCode.NETWORK_ERROR,
 				message: error instanceof Error ? error.message : 'Network error occurred'
 			}
 		};
+		// Log network error (Követelmény 2.2)
+		logApiError(endpoint, 0, errorResponse.error!);
+		return errorResponse;
 	}
 }
 
@@ -301,6 +315,7 @@ export const api = {
 
 /**
  * Upload with progress tracking using XMLHttpRequest
+ * Követelmények: 2.1, 2.2, 2.3 - API hiba naplózás
  */
 function uploadWithProgress<T>(
 	endpoint: string,
@@ -323,13 +338,16 @@ function uploadWithProgress<T>(
 		xhr.addEventListener('load', () => {
 			if (xhr.status === 401) {
 				handleUnauthorized();
-				resolve({
+				const errorResponse: ApiResponse<T> = {
 					success: false,
 					error: {
 						code: ErrorCode.UNAUTHORIZED,
 						message: 'Session expired. Please log in again.'
 					}
-				});
+				};
+				// Log API error (Követelmény 2.1)
+				logApiError(endpoint, xhr.status, errorResponse.error!);
+				resolve(errorResponse);
 				return;
 			}
 
@@ -341,37 +359,51 @@ function uploadWithProgress<T>(
 					setCsrfToken(data.data.csrf_token);
 				}
 
+				// Log error if response indicates failure
+				if (!data.success && data.error) {
+					logApiError(endpoint, xhr.status, data.error);
+				}
+
 				resolve(data);
 			} catch {
-				resolve({
+				const errorResponse: ApiResponse<T> = {
 					success: false,
 					error: {
 						code: mapStatusToErrorCode(xhr.status),
 						message: xhr.statusText || 'Upload failed'
 					}
-				});
+				};
+				// Log API error (Követelmény 2.1)
+				logApiError(endpoint, xhr.status, errorResponse.error!);
+				resolve(errorResponse);
 			}
 		});
 
-		// Handle errors
+		// Handle errors (Követelmény 2.2)
 		xhr.addEventListener('error', () => {
-			resolve({
+			const errorResponse: ApiResponse<T> = {
 				success: false,
 				error: {
 					code: ErrorCode.NETWORK_ERROR,
 					message: 'Network error during upload'
 				}
-			});
+			};
+			// Log network error (Követelmény 2.2)
+			logApiError(endpoint, 0, errorResponse.error!);
+			resolve(errorResponse);
 		});
 
 		xhr.addEventListener('abort', () => {
-			resolve({
+			const errorResponse: ApiResponse<T> = {
 				success: false,
 				error: {
 					code: ErrorCode.NETWORK_ERROR,
 					message: 'Upload was aborted'
 				}
-			});
+			};
+			// Log abort as network error
+			logApiError(endpoint, 0, errorResponse.error!);
+			resolve(errorResponse);
 		});
 
 		// Open and send request
