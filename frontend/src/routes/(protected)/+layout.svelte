@@ -44,18 +44,20 @@
 		</div>
 	</div>
 {:else if guard.isAllowed}
-	<!-- Protected layout with sidebar -->
-	<div class="flex min-h-screen gap-4 bg-gray-100 p-4">
-		<!-- Sidebar -->
+	<!-- Protected layout with sidebar - layered design -->
+	<div class="flex h-screen bg-slate-700">
+		<!-- Sidebar - appears as background layer -->
 		<Sidebar />
 
-		<!-- Main content area -->
-		<div class="flex flex-1 flex-col gap-4">
+		<!-- Main content area - appears as foreground layer, edge to edge -->
+		<div class="-ml-6 flex flex-1 flex-col overflow-hidden rounded-l-3xl bg-slate-100 shadow-xl">
 			<!-- Header -->
-			<Header />
+			<div class="shrink-0 px-6 pt-4">
+				<Header />
+			</div>
 
-			<!-- Page content -->
-			<main class="flex-1 overflow-auto rounded-2xl bg-white p-6 shadow-sm">
+			<!-- Page content - scrollable -->
+			<main class="flex-1 overflow-y-auto p-6">
 				<div class="mx-auto max-w-7xl">
 					{@render children()}
 				</div>

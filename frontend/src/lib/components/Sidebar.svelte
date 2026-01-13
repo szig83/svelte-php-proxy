@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import Logo from './Logo.svelte';
 	import { getIsAdmin } from '$lib/auth/store.svelte';
 
@@ -35,26 +35,30 @@
 	}
 </script>
 
-<aside class="flex w-80 flex-col rounded-2xl bg-white shadow-sm">
-	<!-- Logo -->
-	<div class="p-6 pb-4">
+<aside class="flex w-72 shrink-0 flex-col py-6 pr-10">
+	<!-- Logo - wider to fit side by side -->
+	<div class="mb-8 px-6">
 		<Logo variant="sidebar" />
 	</div>
 
 	<!-- Navigation -->
-	<nav class="flex-1 overflow-y-auto px-3 py-2">
-		<ul class="space-y-1">
+	<nav class="flex-1 overflow-y-auto px-3">
+		<ul class="space-y-0.5">
 			{#each menuItems as item}
-				{@const active = isActive(item.href, $page.url.pathname)}
+				{@const active = isActive(item.href, page.url.pathname)}
 				<li>
 					<a
 						href={item.href}
-						class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors
+						class="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors
 							{active
-							? 'bg-blue-50 font-medium text-blue-900'
-							: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}"
+							? 'bg-white/10 font-medium text-white'
+							: 'text-gray-400/90 hover:bg-white/5 hover:text-white'}"
 					>
-						<span class="flex h-5 w-5 items-center justify-center">
+						<span
+							class="flex h-4 w-4 shrink-0 items-center justify-center {active
+								? 'text-blue-400'
+								: 'text-slate-500'}"
+						>
 							{#if item.icon === 'wallet'}
 								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path
@@ -208,16 +212,20 @@
 
 			<!-- Admin menu item - only visible for admins -->
 			{#if getIsAdmin()}
-				{@const adminActive = isActive('/admin', $page.url.pathname)}
-				<li class="mt-4 border-t border-slate-200 pt-4">
+				{@const adminActive = isActive('/admin', page.url.pathname)}
+				<li class="mt-3 border-t border-slate-600 pt-3">
 					<a
 						href="/admin"
-						class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors
+						class="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors
 							{adminActive
-							? 'bg-blue-50 font-medium text-blue-900'
-							: 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'}"
+							? 'bg-white/10 font-medium text-white'
+							: 'text-slate-400 hover:bg-white/5 hover:text-white'}"
 					>
-						<span class="flex h-5 w-5 items-center justify-center">
+						<span
+							class="flex h-4 w-4 shrink-0 items-center justify-center {adminActive
+								? 'text-blue-400'
+								: 'text-slate-500'}"
+						>
 							<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path
 									stroke-linecap="round"
@@ -239,4 +247,23 @@
 			{/if}
 		</ul>
 	</nav>
+
+	<!-- Bottom card -->
+	<div class="mx-4 mt-4 rounded-2xl bg-slate-600/50 p-4">
+		<p class="mb-1 text-sm font-medium text-white">Kapcsolat</p>
+		<p class="mb-3 text-xs text-slate-400">Segítségre van szüksége?</p>
+		<button
+			class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-500/80 text-white transition-colors hover:bg-slate-400/80"
+			aria-label="Kapcsolat"
+		>
+			<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="2"
+					d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+				/>
+			</svg>
+		</button>
+	</div>
 </aside>

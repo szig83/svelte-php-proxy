@@ -201,258 +201,216 @@
 	<title>Admin - Hibák</title>
 </svelte:head>
 
-<div class="errors-container">
-	<header class="header">
-		<h1>Hiba Nézegető</h1>
-		<a href="/admin" class="back-link">← Vissza az admin főoldalra</a>
-	</header>
-
-	<main class="main">
-		<!-- Szűrők -->
-		<section class="filters-section">
-			<h2>Szűrők</h2>
-			<div class="filters-grid">
-				<div class="filter-group">
-					<label for="type-filter">Típus</label>
-					<select id="type-filter" bind:value={filters.type}>
-						<option value="">Összes</option>
-						<option value="javascript">JavaScript</option>
-						<option value="api">API</option>
-						<option value="manual">Manuális</option>
-						<option value="php">PHP (Backend)</option>
-					</select>
-				</div>
-
-				<div class="filter-group">
-					<label for="date-from">Dátum kezdete</label>
-					<input type="date" id="date-from" bind:value={filters.dateFrom} />
-				</div>
-
-				<div class="filter-group">
-					<label for="date-to">Dátum vége</label>
-					<input type="date" id="date-to" bind:value={filters.dateTo} />
-				</div>
-
-				<div class="filter-actions">
-					<button class="btn btn-primary" onclick={applyFilters}>Szűrés</button>
-					<button class="btn btn-secondary" onclick={clearFilters}>Törlés</button>
-				</div>
+<div class="flex h-full flex-col space-y-4">
+	<section class="page-header">
+		<h1 class="text-admin-text-primary mb-1 text-2xl font-bold">Hiba Nézegető</h1>
+		<p class="text-admin-text-secondary">Frontend hibák megtekintése és elemzése</p>
+	</section>
+	<!-- Szűrők -->
+	<section class="filters-section">
+		<h2>Szűrők</h2>
+		<div class="filters-grid">
+			<div class="filter-group">
+				<label for="type-filter">Típus</label>
+				<select id="type-filter" bind:value={filters.type}>
+					<option value="">Összes</option>
+					<option value="javascript">JavaScript</option>
+					<option value="api">API</option>
+					<option value="manual">Manuális</option>
+					<option value="php">PHP (Backend)</option>
+				</select>
 			</div>
+
+			<div class="filter-group">
+				<label for="date-from">Dátum kezdete</label>
+				<input type="date" id="date-from" bind:value={filters.dateFrom} />
+			</div>
+
+			<div class="filter-group">
+				<label for="date-to">Dátum vége</label>
+				<input type="date" id="date-to" bind:value={filters.dateTo} />
+			</div>
+
+			<div class="filter-actions">
+				<button class="btn btn-primary" onclick={applyFilters}>Szűrés</button>
+				<button class="btn btn-secondary" onclick={clearFilters}>Törlés</button>
+			</div>
+		</div>
+	</section>
+
+	<div class="content-grid">
+		<!-- Hiba lista -->
+		<section class="errors-list-section">
+			<h2>Hibák ({total} db)</h2>
+
+			{#if isLoading}
+				<div class="loading">Betöltés...</div>
+			{:else if loadError}
+				<div class="error-message">{loadError}</div>
+			{:else if errors.length === 0}
+				<div class="empty-message">Nincs találat a megadott szűrőkkel.</div>
+			{:else}
+				<ul class="errors-list">
+					{#each errors as error (error.id)}
+						<li>
+							<button
+								class="error-item"
+								class:selected={selectedError?.id === error.id}
+								onclick={() => selectError(error)}
+							>
+								<div class="error-item-header">
+									<span
+										class="badge severity-badge"
+										style="background-color: {getSeverityColor(error.severity)}"
+									>
+										{error.severity}
+									</span>
+									<span
+										class="badge type-badge"
+										style="background-color: {getTypeColor(error.type)}"
+									>
+										{error.type}
+									</span>
+									<span class="error-time">{formatDate(error.timestamp)}</span>
+								</div>
+								<div class="error-message-preview">
+									{error.message.length > 100
+										? error.message.substring(0, 100) + '...'
+										: error.message}
+								</div>
+							</button>
+						</li>
+					{/each}
+				</ul>
+
+				<!-- Lapozás -->
+				{#if totalPages > 1}
+					<div class="pagination">
+						<button
+							class="btn btn-small"
+							disabled={!hasPrevPage}
+							onclick={() => goToPage(currentPage - 1)}
+						>
+							Előző
+						</button>
+						<span class="page-info">{currentPage} / {totalPages}</span>
+						<button
+							class="btn btn-small"
+							disabled={!hasNextPage}
+							onclick={() => goToPage(currentPage + 1)}
+						>
+							Következő
+						</button>
+					</div>
+				{/if}
+			{/if}
 		</section>
 
-		<div class="content-grid">
-			<!-- Hiba lista -->
-			<section class="errors-list-section">
-				<h2>Hibák ({total} db)</h2>
+		<!-- Hiba részletek -->
+		<section class="error-details-section">
+			<h2>Részletek</h2>
 
-				{#if isLoading}
-					<div class="loading">Betöltés...</div>
-				{:else if loadError}
-					<div class="error-message">{loadError}</div>
-				{:else if errors.length === 0}
-					<div class="empty-message">Nincs találat a megadott szűrőkkel.</div>
-				{:else}
-					<ul class="errors-list">
-						{#each errors as error (error.id)}
-							<li>
-								<button
-									class="error-item"
-									class:selected={selectedError?.id === error.id}
-									onclick={() => selectError(error)}
-								>
-									<div class="error-item-header">
-										<span
-											class="badge severity-badge"
-											style="background-color: {getSeverityColor(error.severity)}"
-										>
-											{error.severity}
-										</span>
-										<span
-											class="badge type-badge"
-											style="background-color: {getTypeColor(error.type)}"
-										>
-											{error.type}
-										</span>
-										<span class="error-time">{formatDate(error.timestamp)}</span>
-									</div>
-									<div class="error-message-preview">
-										{error.message.length > 100
-											? error.message.substring(0, 100) + '...'
-											: error.message}
-									</div>
-								</button>
-							</li>
-						{/each}
-					</ul>
+			{#if selectedError}
+				<div class="error-details">
+					<button class="close-btn" onclick={clearSelection}>✕</button>
 
-					<!-- Lapozás -->
-					{#if totalPages > 1}
-						<div class="pagination">
-							<button
-								class="btn btn-small"
-								disabled={!hasPrevPage}
-								onclick={() => goToPage(currentPage - 1)}
-							>
-								Előző
-							</button>
-							<span class="page-info">{currentPage} / {totalPages}</span>
-							<button
-								class="btn btn-small"
-								disabled={!hasNextPage}
-								onclick={() => goToPage(currentPage + 1)}
-							>
-								Következő
-							</button>
+					<div class="detail-group">
+						<span class="detail-label">ID</span>
+						<code>{selectedError.id}</code>
+					</div>
+
+					<div class="detail-group">
+						<span class="detail-label">Típus</span>
+						<span class="badge" style="background-color: {getTypeColor(selectedError.type)}">
+							{selectedError.type}
+						</span>
+					</div>
+
+					<div class="detail-group">
+						<span class="detail-label">Súlyosság</span>
+						<span
+							class="badge"
+							style="background-color: {getSeverityColor(selectedError.severity)}"
+						>
+							{selectedError.severity}
+						</span>
+					</div>
+
+					<div class="detail-group">
+						<span class="detail-label">Időpont</span>
+						<span>{formatDate(selectedError.timestamp)}</span>
+					</div>
+
+					<div class="detail-group">
+						<span class="detail-label">Fogadva</span>
+						<span>{formatDate(selectedError.receivedAt)}</span>
+					</div>
+
+					<div class="detail-group">
+						<span class="detail-label">Üzenet</span>
+						<p class="error-full-message">{selectedError.message}</p>
+					</div>
+
+					{#if selectedError.stack}
+						<div class="detail-group">
+							<span class="detail-label">Stack Trace</span>
+							<pre class="stack-trace">{selectedError.stack}</pre>
 						</div>
 					{/if}
-				{/if}
-			</section>
 
-			<!-- Hiba részletek -->
-			<section class="error-details-section">
-				<h2>Részletek</h2>
-
-				{#if selectedError}
-					<div class="error-details">
-						<button class="close-btn" onclick={clearSelection}>✕</button>
-
-						<div class="detail-group">
-							<span class="detail-label">ID</span>
-							<code>{selectedError.id}</code>
-						</div>
-
-						<div class="detail-group">
-							<span class="detail-label">Típus</span>
-							<span class="badge" style="background-color: {getTypeColor(selectedError.type)}">
-								{selectedError.type}
-							</span>
-						</div>
-
-						<div class="detail-group">
-							<span class="detail-label">Súlyosság</span>
-							<span
-								class="badge"
-								style="background-color: {getSeverityColor(selectedError.severity)}"
-							>
-								{selectedError.severity}
-							</span>
-						</div>
-
-						<div class="detail-group">
-							<span class="detail-label">Időpont</span>
-							<span>{formatDate(selectedError.timestamp)}</span>
-						</div>
-
-						<div class="detail-group">
-							<span class="detail-label">Fogadva</span>
-							<span>{formatDate(selectedError.receivedAt)}</span>
-						</div>
-
-						<div class="detail-group">
-							<span class="detail-label">Üzenet</span>
-							<p class="error-full-message">{selectedError.message}</p>
-						</div>
-
-						{#if selectedError.stack}
-							<div class="detail-group">
-								<span class="detail-label">Stack Trace</span>
-								<pre class="stack-trace">{selectedError.stack}</pre>
+					<div class="detail-group">
+						<span class="detail-label">Kontextus</span>
+						<div class="context-details">
+							<div class="context-item">
+								<span class="context-label">URL:</span>
+								<span>{selectedError.context.url}</span>
 							</div>
-						{/if}
-
-						<div class="detail-group">
-							<span class="detail-label">Kontextus</span>
-							<div class="context-details">
-								<div class="context-item">
-									<span class="context-label">URL:</span>
-									<span>{selectedError.context.url}</span>
-								</div>
-								<div class="context-item">
-									<span class="context-label">User Agent:</span>
-									<span class="user-agent">{selectedError.context.userAgent}</span>
-								</div>
-								{#if selectedError.context.userId}
-									<div class="context-item">
-										<span class="context-label">Felhasználó ID:</span>
-										<span>{selectedError.context.userId}</span>
-									</div>
-								{/if}
-								{#if selectedError.context.appVersion}
-									<div class="context-item">
-										<span class="context-label">App verzió:</span>
-										<span>{selectedError.context.appVersion}</span>
-									</div>
-								{/if}
-								{#if selectedError.context.extra && Object.keys(selectedError.context.extra).length > 0}
-									<div class="context-item">
-										<span class="context-label">Extra:</span>
-										<pre class="extra-context">{JSON.stringify(
-												selectedError.context.extra,
-												null,
-												2
-											)}</pre>
-									</div>
-								{/if}
+							<div class="context-item">
+								<span class="context-label">User Agent:</span>
+								<span class="user-agent">{selectedError.context.userAgent}</span>
 							</div>
+							{#if selectedError.context.userId}
+								<div class="context-item">
+									<span class="context-label">Felhasználó ID:</span>
+									<span>{selectedError.context.userId}</span>
+								</div>
+							{/if}
+							{#if selectedError.context.appVersion}
+								<div class="context-item">
+									<span class="context-label">App verzió:</span>
+									<span>{selectedError.context.appVersion}</span>
+								</div>
+							{/if}
+							{#if selectedError.context.extra && Object.keys(selectedError.context.extra).length > 0}
+								<div class="context-item">
+									<span class="context-label">Extra:</span>
+									<pre class="extra-context">{JSON.stringify(
+											selectedError.context.extra,
+											null,
+											2
+										)}</pre>
+								</div>
+							{/if}
 						</div>
 					</div>
-				{:else}
-					<div class="no-selection">Válasszon ki egy hibát a részletek megtekintéséhez.</div>
-				{/if}
-			</section>
-		</div>
-	</main>
+				</div>
+			{:else}
+				<div class="no-selection">Válasszon ki egy hibát a részletek megtekintéséhez.</div>
+			{/if}
+		</section>
+	</div>
 </div>
 
 <style>
-	.errors-container {
-		background-color: #111827;
-		min-height: 100vh;
-		color: white;
-		font-family:
-			system-ui,
-			-apple-system,
-			sans-serif;
-	}
-
-	.header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		border-bottom: 1px solid #374151;
-		background-color: #1f2937;
-		padding: 1rem 2rem;
-	}
-
-	.header h1 {
-		margin: 0;
-		color: #f9fafb;
-		font-size: 1.25rem;
-	}
-
-	.back-link {
-		transition: color 0.2s;
-		color: #9ca3af;
-		font-size: 0.875rem;
-		text-decoration: none;
-	}
-
-	.back-link:hover {
-		color: white;
-	}
-
-	.main {
-		margin: 0 auto;
-		padding: 1.5rem;
-		max-width: 1400px;
+	.page-header {
+		margin-bottom: 0;
 	}
 
 	/* Szűrők */
 	.filters-section {
-		margin-bottom: 1.5rem;
-		border: 1px solid #374151;
-		border-radius: 8px;
-		background-color: #1f2937;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 12px;
+		background-color: rgba(31, 41, 55, 0.5);
 		padding: 1.25rem;
 	}
 
@@ -484,9 +442,9 @@
 
 	.filter-group select,
 	.filter-group input {
-		border: 1px solid #4b5563;
-		border-radius: 4px;
-		background-color: #374151;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 6px;
+		background-color: rgba(55, 65, 81, 0.5);
 		padding: 0.5rem 0.75rem;
 		min-width: 150px;
 		color: white;
@@ -496,7 +454,7 @@
 	.filter-group select:focus,
 	.filter-group input:focus {
 		outline: none;
-		border-color: #3b82f6;
+		border-color: #00d4ff;
 	}
 
 	.filter-actions {
@@ -509,32 +467,33 @@
 		transition: all 0.2s;
 		cursor: pointer;
 		border: none;
-		border-radius: 4px;
+		border-radius: 6px;
 		padding: 0.5rem 1rem;
 		font-size: 0.875rem;
 	}
 
 	.btn-primary {
-		background-color: #3b82f6;
+		background: linear-gradient(135deg, #00d4ff, #8b5cf6);
 		color: white;
 	}
 
 	.btn-primary:hover {
-		background-color: #2563eb;
+		transform: scale(1.05);
+		box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
 	}
 
 	.btn-secondary {
-		border: 1px solid #4b5563;
-		background-color: #374151;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		background-color: rgba(55, 65, 81, 0.5);
 		color: #d1d5db;
 	}
 
 	.btn-secondary:hover {
-		background-color: #4b5563;
+		background-color: rgba(75, 85, 99, 0.5);
 	}
 
 	.btn-small {
-		background-color: #374151;
+		background-color: rgba(55, 65, 81, 0.5);
 		padding: 0.375rem 0.75rem;
 		color: #d1d5db;
 		font-size: 0.75rem;
@@ -549,6 +508,7 @@
 	.content-grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
+		flex: 1;
 		gap: 1.5rem;
 	}
 
@@ -561,9 +521,9 @@
 	/* Hiba lista */
 	.errors-list-section,
 	.error-details-section {
-		border: 1px solid #374151;
-		border-radius: 8px;
-		background-color: #1f2937;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 12px;
+		background-color: rgba(31, 41, 55, 0.5);
 		padding: 1.25rem;
 	}
 
@@ -577,7 +537,7 @@
 	.errors-list {
 		margin: 0;
 		padding: 0;
-		max-height: 600px;
+		max-height: 500px;
 		overflow-y: auto;
 		list-style: none;
 	}
@@ -586,9 +546,9 @@
 		transition: all 0.2s;
 		cursor: pointer;
 		margin-bottom: 0.5rem;
-		border: 1px solid #4b5563;
-		border-radius: 4px;
-		background-color: #374151;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 8px;
+		background-color: rgba(55, 65, 81, 0.5);
 		padding: 0.75rem;
 		width: 100%;
 		color: white;
@@ -596,12 +556,12 @@
 	}
 
 	.error-item:hover {
-		background-color: #4b5563;
+		background-color: rgba(75, 85, 99, 0.5);
 	}
 
 	.error-item.selected {
-		border-color: #3b82f6;
-		background-color: #1e3a5f;
+		border-color: #00d4ff;
+		background-color: rgba(0, 212, 255, 0.1);
 	}
 
 	.error-item-header {
@@ -640,7 +600,7 @@
 		align-items: center;
 		gap: 1rem;
 		margin-top: 1rem;
-		border-top: 1px solid #374151;
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
 		padding-top: 1rem;
 	}
 
@@ -684,8 +644,8 @@
 	}
 
 	.detail-group code {
-		border-radius: 4px;
-		background-color: #374151;
+		border-radius: 6px;
+		background-color: rgba(55, 65, 81, 0.5);
 		padding: 0.25rem 0.5rem;
 		font-size: 0.75rem;
 		font-family: monospace;
@@ -699,8 +659,8 @@
 
 	.stack-trace {
 		margin: 0;
-		border-radius: 4px;
-		background-color: #0f172a;
+		border-radius: 8px;
+		background-color: rgba(15, 23, 42, 0.8);
 		padding: 1rem;
 		max-height: 300px;
 		overflow-x: auto;
@@ -713,8 +673,8 @@
 	}
 
 	.context-details {
-		border-radius: 4px;
-		background-color: #374151;
+		border-radius: 8px;
+		background-color: rgba(55, 65, 81, 0.5);
 		padding: 0.75rem;
 	}
 
@@ -739,8 +699,8 @@
 
 	.extra-context {
 		margin: 0.5rem 0 0;
-		border-radius: 4px;
-		background-color: #0f172a;
+		border-radius: 6px;
+		background-color: rgba(15, 23, 42, 0.8);
 		padding: 0.5rem;
 		overflow-x: auto;
 		font-size: 0.75rem;

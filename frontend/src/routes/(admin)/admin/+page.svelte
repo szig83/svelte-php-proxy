@@ -1,221 +1,215 @@
 <script lang="ts">
 	// (admin)/admin/+page.svelte
-	// Admin főoldal
-	// Követelmények: 5.3, 6.4
+	// Admin főoldal - Futurisztikus redesign
+	// Requirements: 6.1, 6.2, 6.3, 6.4, 2.4, 2.5
 
-	import { getAuthState, logout } from '$lib/auth';
-	import { goto } from '$app/navigation';
+	import { getAuthState } from '$lib/auth';
 
 	const authState = getAuthState();
 
-	async function handleLogout() {
-		await logout();
-		goto('/login');
-	}
+	const navigationCards = [
+		{
+			label: 'Felhasználók',
+			href: '/admin/users',
+			description: 'Felhasználók kezelése és jogosultságok beállítása',
+			icon: 'users' as const,
+			gradient: 'from-cyan-500/20 to-blue-500/20',
+			glowColor: 'rgba(0, 212, 255, 0.3)'
+		},
+		{
+			label: 'Statisztikák',
+			href: '/admin/stats',
+			description: 'Rendszer statisztikák és jelentések megtekintése',
+			icon: 'chart' as const,
+			gradient: 'from-purple-500/20 to-pink-500/20',
+			glowColor: 'rgba(139, 92, 246, 0.3)'
+		},
+		{
+			label: 'Hibák',
+			href: '/admin/errors',
+			description: 'Frontend hibák megtekintése és elemzése',
+			icon: 'bug' as const,
+			gradient: 'from-orange-500/20 to-red-500/20',
+			glowColor: 'rgba(249, 115, 22, 0.3)'
+		}
+	];
 </script>
 
 <svelte:head>
 	<title>Admin - Vezérlőpult</title>
 </svelte:head>
 
-<div class="admin-container">
-	<header class="header">
-		<h1>Admin Vezérlőpult</h1>
-		<nav class="nav">
-			<a href="/" class="nav-link">Főoldal</a>
-			<a href="/dashboard" class="nav-link">Dashboard</a>
-			<a href="/admin/users" class="nav-link">Felhasználók</a>
-			<a href="/admin/stats" class="nav-link">Statisztikák</a>
-			<a href="/admin/errors" class="nav-link">Hibák</a>
-			<button onclick={handleLogout} class="logout-button">Kijelentkezés</button>
-		</nav>
-	</header>
+<div class="space-y-8">
+	<!-- Welcome Section -->
+	<section
+		class="glass-panel glossy-card animate-fade-in-up relative overflow-hidden rounded-2xl p-8"
+	>
+		<!-- Gradient overlay -->
+		<div
+			class="from-admin-accent-cyan/10 to-admin-accent-purple/10 pointer-events-none absolute inset-0 bg-linear-to-br"
+		></div>
 
-	<main class="main">
-		<section class="welcome-section">
-			<h2>Admin Vezérlőpult</h2>
-			<p>Üdvözöljük az admin felületen, {authState.user?.name}!</p>
-		</section>
+		<!-- Glow effect -->
+		<div
+			class="pointer-events-none absolute -top-20 -right-20 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(0,212,255,0.15)_0%,transparent_70%)]"
+		></div>
 
-		<div class="cards-grid">
-			<a href="/admin/users" class="card">
-				<div class="card-icon">👥</div>
-				<h3>Felhasználók</h3>
-				<p>Felhasználók kezelése és jogosultságok beállítása</p>
-			</a>
-
-			<a href="/admin/stats" class="card">
-				<div class="card-icon">📊</div>
-				<h3>Statisztikák</h3>
-				<p>Rendszer statisztikák és jelentések megtekintése</p>
-			</a>
-
-			<a href="/admin/errors" class="card">
-				<div class="card-icon">🐛</div>
-				<h3>Hibák</h3>
-				<p>Frontend hibák megtekintése és elemzése</p>
-			</a>
+		<div class="relative z-10">
+			<h1 class="text-admin-text-primary mb-2 text-2xl font-bold md:text-3xl">
+				Üdvözöljük, <span
+					class="from-admin-accent-cyan to-admin-accent-purple bg-linear-to-r bg-clip-text text-transparent"
+					data-testid="user-name">{authState.user?.name || 'Felhasználó'}</span
+				>!
+			</h1>
+			<p class="text-admin-text-secondary text-base">
+				Az admin vezérlőpultról kezelheti a rendszer összes funkcióját.
+			</p>
 		</div>
+	</section>
 
-		<section class="permissions-section">
-			<h3>Az Ön jogosultságai</h3>
-			<div class="permissions-list">
-				{#each authState.user?.permissions || [] as permission}
-					<span class="permission-badge">{permission}</span>
+	<!-- Navigation Cards -->
+	<section class="space-y-4">
+		<h2
+			class="text-admin-text-primary animate-fade-in-up text-lg font-semibold"
+			style="animation-delay: 100ms"
+		>
+			Gyors navigáció
+		</h2>
+
+		<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+			{#each navigationCards as card, index}
+				<a
+					href={card.href}
+					class="glass-panel glossy-card group animate-fade-in-up relative overflow-hidden rounded-2xl p-6 transition-all duration-300 hover:scale-[1.02]"
+					style="animation-delay: {150 + index * 50}ms; --glow-color: {card.glowColor}"
+				>
+					<!-- Gradient background -->
+					<div
+						class="pointer-events-none absolute inset-0 bg-linear-to-br opacity-0 transition-opacity duration-300 group-hover:opacity-100 {card.gradient}"
+					></div>
+
+					<!-- Glow effect on hover -->
+					<div
+						class="pointer-events-none absolute inset-0 rounded-2xl opacity-0 shadow-[0_0_30px_var(--glow-color)] transition-opacity duration-300 group-hover:opacity-100"
+					></div>
+
+					<div class="relative z-10">
+						<!-- Icon -->
+						<div
+							class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 transition-all duration-300 group-hover:scale-110 group-hover:bg-white/10"
+						>
+							{#if card.icon === 'users'}
+								<svg
+									class="text-admin-accent-cyan h-6 w-6"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="1.5"
+										d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+									/>
+								</svg>
+							{:else if card.icon === 'chart'}
+								<svg
+									class="text-admin-accent-purple h-6 w-6"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="1.5"
+										d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+									/>
+								</svg>
+							{:else if card.icon === 'bug'}
+								<svg
+									class="h-6 w-6 text-orange-400"
+									fill="none"
+									stroke="currentColor"
+									viewBox="0 0 24 24"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="1.5"
+										d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+									/>
+								</svg>
+							{/if}
+						</div>
+
+						<!-- Title -->
+						<h3
+							class="text-admin-text-primary mb-2 text-lg font-semibold transition-colors duration-300"
+						>
+							{card.label}
+						</h3>
+
+						<!-- Description -->
+						<p class="text-admin-text-secondary text-sm">{card.description}</p>
+
+						<!-- Arrow indicator -->
+						<div
+							class="text-admin-text-muted mt-4 flex items-center gap-1 text-sm transition-all duration-300 group-hover:translate-x-1 group-hover:text-white/80"
+						>
+							<span>Megnyitás</span>
+							<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M9 5l7 7-7 7"
+								/>
+							</svg>
+						</div>
+					</div>
+				</a>
+			{/each}
+		</div>
+	</section>
+
+	<!-- Permissions Section -->
+	<section
+		class="glass-panel animate-fade-in-up rounded-2xl p-6"
+		style="animation-delay: 350ms"
+		data-testid="permissions-section"
+	>
+		<h3 class="text-admin-text-primary mb-4 flex items-center gap-2 text-base font-semibold">
+			<svg
+				class="text-admin-accent-cyan h-5 w-5"
+				fill="none"
+				stroke="currentColor"
+				viewBox="0 0 24 24"
+			>
+				<path
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					stroke-width="1.5"
+					d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+				/>
+			</svg>
+			Az Ön jogosultságai
+		</h3>
+
+		<div class="flex flex-wrap gap-2" data-testid="permissions-list">
+			{#if authState.user?.permissions && authState.user.permissions.length > 0}
+				{#each authState.user.permissions as permission, index}
+					<span
+						class="from-admin-accent-cyan/10 to-admin-accent-purple/10 text-admin-text-primary animate-fade-in-up rounded-full border border-white/10 bg-linear-to-r px-3 py-1.5 text-xs font-medium"
+						style="animation-delay: {400 + index * 30}ms"
+						data-testid="permission-badge"
+					>
+						{permission}
+					</span>
 				{/each}
-			</div>
-		</section>
-	</main>
+			{:else}
+				<span class="text-admin-text-muted text-sm">Nincsenek jogosultságok</span>
+			{/if}
+		</div>
+	</section>
 </div>
-
-<style>
-	.admin-container {
-		background-color: #111827;
-		min-height: 100vh;
-		color: white;
-		font-family:
-			system-ui,
-			-apple-system,
-			sans-serif;
-	}
-
-	.header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		border-bottom: 1px solid #374151;
-		background-color: #1f2937;
-		padding: 1rem 2rem;
-	}
-
-	.header h1 {
-		margin: 0;
-		color: #f9fafb;
-		font-size: 1.25rem;
-	}
-
-	.nav {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
-	}
-
-	.nav-link {
-		transition: color 0.2s;
-		color: #9ca3af;
-		font-size: 0.875rem;
-		text-decoration: none;
-	}
-
-	.nav-link:hover {
-		color: white;
-	}
-
-	.logout-button {
-		transition: all 0.2s;
-		cursor: pointer;
-		border: 1px solid #6b7280;
-		border-radius: 4px;
-		background: none;
-		padding: 0.5rem 1rem;
-		color: #d1d5db;
-		font-size: 0.875rem;
-	}
-
-	.logout-button:hover {
-		border-color: #9ca3af;
-		background-color: #374151;
-	}
-
-	.main {
-		margin: 0 auto;
-		padding: 2rem;
-		max-width: 1000px;
-	}
-
-	.welcome-section {
-		margin-bottom: 2rem;
-		border-radius: 8px;
-		background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-		padding: 2rem;
-	}
-
-	.welcome-section h2 {
-		margin: 0 0 0.5rem;
-		font-size: 1.5rem;
-	}
-
-	.welcome-section p {
-		opacity: 0.9;
-		margin: 0;
-	}
-
-	.cards-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-		gap: 1.5rem;
-		margin-bottom: 2rem;
-	}
-
-	.card {
-		transition:
-			transform 0.2s,
-			box-shadow 0.2s;
-		border: 1px solid #374151;
-		border-radius: 8px;
-		background-color: #1f2937;
-		padding: 1.5rem;
-		color: white;
-		text-decoration: none;
-	}
-
-	.card:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-		border-color: #4b5563;
-	}
-
-	.card-icon {
-		margin-bottom: 0.75rem;
-		font-size: 2rem;
-	}
-
-	.card h3 {
-		margin: 0 0 0.5rem;
-		font-size: 1.125rem;
-	}
-
-	.card p {
-		margin: 0;
-		color: #9ca3af;
-		font-size: 0.875rem;
-	}
-
-	.permissions-section {
-		border: 1px solid #374151;
-		border-radius: 8px;
-		background-color: #1f2937;
-		padding: 1.5rem;
-	}
-
-	.permissions-section h3 {
-		margin: 0 0 1rem;
-		color: #d1d5db;
-		font-size: 1rem;
-	}
-
-	.permissions-list {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-	}
-
-	.permission-badge {
-		border-radius: 9999px;
-		background-color: #374151;
-		padding: 0.25rem 0.75rem;
-		color: #d1d5db;
-		font-weight: 500;
-		font-size: 0.75rem;
-	}
-</style>

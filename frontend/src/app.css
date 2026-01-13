@@ -1,5 +1,128 @@
 @import "tailwindcss";
 
+@theme {
+  /* Admin színpaletta - Háttér színek */
+  --color-admin-bg-primary: #0a0a0f;
+  --color-admin-bg-secondary: #12121a;
+  --color-admin-bg-card: oklch(10% 0.02 280 / 0.8);
+
+  /* Admin színpaletta - Akcentus színek */
+  --color-admin-accent-cyan: #00d4ff;
+  --color-admin-accent-purple: #8b5cf6;
+
+  /* Admin színpaletta - Szöveg színek */
+  --color-admin-text-primary: #f0f0f5;
+  --color-admin-text-secondary: #8888a0;
+  --color-admin-text-muted: #555566;
+
+  /* Admin színpaletta - Border */
+  --color-admin-border: oklch(100% 0 0 / 0.1);
+}
+
+/* Admin CSS Custom Properties Fallback */
+:root {
+  /* Háttér színek */
+  --admin-bg-primary: #0a0a0f;
+  --admin-bg-secondary: #12121a;
+  --admin-bg-card: rgba(15, 15, 25, 0.8);
+
+  /* Akcentus színek */
+  --admin-accent-cyan: #00d4ff;
+  --admin-accent-purple: #8b5cf6;
+  --admin-accent-gradient: linear-gradient(135deg, #00d4ff, #8b5cf6);
+
+  /* Szöveg színek */
+  --admin-text-primary: #f0f0f5;
+  --admin-text-secondary: #8888a0;
+  --admin-text-muted: #555566;
+
+  /* Border és effektek */
+  --admin-border: rgba(255, 255, 255, 0.1);
+  --admin-glow-cyan: 0 0 20px rgba(0, 212, 255, 0.3);
+  --admin-glow-purple: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+/* Glassmorphism panel */
+.glass-panel {
+  background: rgba(15, 15, 25, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+}
+
+/* Glossy card effect */
+.glossy-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+
+.glossy-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+}
+
+/* Admin animációk */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(0, 212, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+  }
+}
+
+/* Staggered fade-in animation for sidebar menu items */
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+
+.animate-glow-pulse {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* Page transition animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-page-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
 /* Smooth scrollbar for sidebar */
 .overflow-y-auto::-webkit-scrollbar {
 	width: 4px;
@@ -20,4 +143,49 @@
 
 button, a {
     cursor: pointer;
+}
+
+/* Enhanced hover effects for cards and buttons */
+.hover-glow-cyan {
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.hover-glow-cyan:hover {
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.hover-glow-purple {
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.hover-glow-purple:hover {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+/* Scale effect on hover */
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Combined hover effect for interactive cards */
+.interactive-card {
+  transition: transform 0.2s ease, box-shadow 0.3s ease, background-color 0.2s ease;
+}
+
+.interactive-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 25px rgba(0, 212, 255, 0.2);
+}
+
+/* Smooth icon scale on parent hover */
+.group:hover .icon-scale {
+  transform: scale(1.1);
+}
+
+.icon-scale {
+  transition: transform 0.2s ease;
 }

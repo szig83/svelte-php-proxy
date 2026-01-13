@@ -585,6 +585,24 @@ describe('Property Test: API Hiba Információ Teljessége', () => {
 			.stringMatching(/^\/[a-zA-Z0-9\-\/]*$/)
 			.filter((s) => s.length >= 2 && s.length <= 100);
 
+		// Helper to normalize -0 to 0 (JavaScript edge case)
+		const normalizeNegativeZero = (value: unknown): unknown => {
+			if (typeof value === 'number' && Object.is(value, -0)) {
+				return 0;
+			}
+			if (Array.isArray(value)) {
+				return value.map(normalizeNegativeZero);
+			}
+			if (value !== null && typeof value === 'object') {
+				const result: Record<string, unknown> = {};
+				for (const [k, v] of Object.entries(value)) {
+					result[k] = normalizeNegativeZero(v);
+				}
+				return result;
+			}
+			return value;
+		};
+
 		fc.assert(
 			fc.property(
 				endpointArb,
@@ -600,9 +618,12 @@ describe('Property Test: API Hiba Információ Teljessége', () => {
 
 					capturedEntries = [];
 
+					// Normalize -0 values before comparison
+					const normalizedDetails = normalizeNegativeZero(details);
+
 					logger.logApiError(endpoint, status, {
 						message,
-						details
+						details: normalizedDetails as Record<string, unknown>
 					});
 
 					expect(capturedEntries.length).toBe(1);
@@ -610,7 +631,7 @@ describe('Property Test: API Hiba Információ Teljessége', () => {
 
 					// Error details should be preserved
 					expect(entry.context.extra).toBeDefined();
-					expect(entry.context.extra!.errorDetails).toEqual(details);
+					expect(entry.context.extra!.errorDetails).toEqual(normalizedDetails);
 				}
 			),
 			{ numRuns: 100 }

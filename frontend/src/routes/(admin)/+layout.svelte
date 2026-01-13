@@ -1,13 +1,14 @@
 <script lang="ts">
 	// (admin)/+layout.svelte
 	// Admin layout - requires authentication AND admin permission
-	// Követelmények: 5.1, 5.4, 6.4
+	// Követelmények: 1.1, 5.1, 5.4, 6.4
 
 	import { onMount } from 'svelte';
 	// Direct imports to avoid circular dependency
 	import { guardRoute, createGuardState } from '$lib/auth/guard.svelte';
 	import { getAuthState } from '$lib/auth/store.svelte';
 	import { checkAuth } from '$lib/auth/operations';
+	import { AdminLayout } from '$lib/components/admin';
 
 	let { children } = $props();
 
@@ -39,8 +40,10 @@
 		<p>Betöltés...</p>
 	</div>
 {:else if guard.isAllowed}
-	<!-- Render admin content -->
-	{@render children()}
+	<!-- Render admin content with futuristic layout -->
+	<AdminLayout>
+		{@render children()}
+	</AdminLayout>
 {:else}
 	<!-- Redirecting state (should not be visible long) -->
 	<div class="auth-redirecting">
@@ -54,7 +57,8 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		background-color: var(--admin-bg-primary, #0a0a0f);
 		min-height: 200px;
-		color: #666;
+		color: var(--admin-text-secondary, #8888a0);
 	}
 </style>

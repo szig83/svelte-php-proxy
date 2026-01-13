@@ -6,12 +6,8 @@
 	let { variant = 'default' }: Props = $props();
 </script>
 
-<div
-	class="flex items-center gap-2"
-	class:flex-col={variant === 'sidebar'}
-	class:gap-3={variant === 'sidebar'}
->
-	<div class="flex h-10 w-10 items-center justify-center">
+<div class="flex items-center gap-2">
+	<div class="flex h-10 w-10 shrink-0 items-center justify-center">
 		<svg viewBox="0 0 40 40" class="h-10 w-10">
 			<defs>
 				<linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -25,12 +21,11 @@
 		</svg>
 	</div>
 	<span
-		class="font-semibold"
+		class="leading-tight font-semibold"
 		class:text-lg={variant === 'default'}
 		class:text-gray-800={variant === 'default'}
 		class:text-sm={variant === 'sidebar'}
-		class:text-center={variant === 'sidebar'}
-		class:text-gray-700={variant === 'sidebar'}
+		class:text-white={variant === 'sidebar'}
 	>
 		Új Pillér Egészségpénztár
 	</span>
