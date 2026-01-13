@@ -1,9 +1,4 @@
 <script lang="ts">
-	// (admin)/admin/users/+page.svelte
-	// Admin - Felhasználók kezelése oldal
-	// Követelmények: 5.3, 6.4
-
-	// Placeholder user data for demonstration
 	const users = [
 		{
 			id: '1',
@@ -20,39 +15,47 @@
 	<title>Admin - Felhasználók</title>
 </svelte:head>
 
-<div class="flex h-full flex-col space-y-6">
-	<section class="page-header">
-		<h1 class="text-admin-text-primary mb-1 text-2xl font-bold">Felhasználók</h1>
-		<p class="text-admin-text-secondary">Felhasználók listája és kezelése</p>
+<div class="space-y-6">
+	<section>
+		<h1 class="mb-1 text-2xl font-bold text-slate-800">Felhasználók</h1>
+		<p class="text-slate-500">Felhasználók listája és kezelése</p>
 	</section>
 
-	<section class="users-section flex-1">
-		<div class="table-container">
-			<table class="users-table">
+	<section class="overflow-hidden rounded-xl bg-white shadow-sm">
+		<div class="overflow-x-auto">
+			<table class="w-full">
 				<thead>
-					<tr>
-						<th>ID</th>
-						<th>Név</th>
-						<th>E-mail</th>
-						<th>Jogosultságok</th>
-						<th>Műveletek</th>
+					<tr class="border-b border-slate-200 bg-slate-50">
+						<th class="px-6 py-3 text-left text-sm font-medium text-slate-600">ID</th>
+						<th class="px-6 py-3 text-left text-sm font-medium text-slate-600">Név</th>
+						<th class="px-6 py-3 text-left text-sm font-medium text-slate-600">E-mail</th>
+						<th class="px-6 py-3 text-left text-sm font-medium text-slate-600">Jogosultságok</th>
+						<th class="px-6 py-3 text-left text-sm font-medium text-slate-600">Műveletek</th>
 					</tr>
 				</thead>
-				<tbody>
+				<tbody class="divide-y divide-slate-200">
 					{#each users as user}
-						<tr>
-							<td>{user.id}</td>
-							<td>{user.name}</td>
-							<td>{user.email}</td>
-							<td>
-								<div class="permissions-list">
+						<tr class="hover:bg-slate-50">
+							<td class="px-6 py-4 text-sm text-slate-600">{user.id}</td>
+							<td class="px-6 py-4 text-sm font-medium text-slate-800">{user.name}</td>
+							<td class="px-6 py-4 text-sm text-slate-600">{user.email}</td>
+							<td class="px-6 py-4">
+								<div class="flex flex-wrap gap-1">
 									{#each user.permissions as permission}
-										<span class="permission-badge">{permission}</span>
+										<span
+											class="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700"
+										>
+											{permission}
+										</span>
 									{/each}
 								</div>
 							</td>
-							<td>
-								<button class="action-button">Szerkesztés</button>
+							<td class="px-6 py-4">
+								<button
+									class="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-purple-700"
+								>
+									Szerkesztés
+								</button>
 							</td>
 						</tr>
 					{/each}
@@ -61,99 +64,10 @@
 		</div>
 	</section>
 
-	<section class="info-section">
-		<p>
-			<strong>Megjegyzés:</strong> Ez egy példa oldal. A valós implementációban az adatok a külső API-ból
-			érkeznének.
+	<section class="rounded-xl bg-amber-50 p-4">
+		<p class="text-sm text-amber-800">
+			<span class="font-medium">Megjegyzés:</span> Ez egy példa oldal. A valós implementációban az adatok
+			a külső API-ból érkeznének.
 		</p>
 	</section>
 </div>
-
-<style>
-	.page-header {
-		margin-bottom: 0;
-	}
-
-	.users-section {
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 12px;
-		background-color: rgba(31, 41, 55, 0.5);
-		overflow: hidden;
-	}
-
-	.table-container {
-		overflow-x: auto;
-	}
-
-	.users-table {
-		border-collapse: collapse;
-		width: 100%;
-	}
-
-	.users-table th,
-	.users-table td {
-		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-		padding: 1rem;
-		text-align: left;
-	}
-
-	.users-table th {
-		background-color: rgba(55, 65, 81, 0.5);
-		color: #d1d5db;
-		font-weight: 500;
-		font-size: 0.875rem;
-	}
-
-	.users-table td {
-		color: #e5e7eb;
-		font-size: 0.875rem;
-	}
-
-	.users-table tbody tr:hover {
-		background-color: rgba(55, 65, 81, 0.5);
-	}
-
-	.permissions-list {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.25rem;
-	}
-
-	.permission-badge {
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 9999px;
-		background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(139, 92, 246, 0.2));
-		padding: 0.125rem 0.5rem;
-		color: #d1d5db;
-		font-size: 0.75rem;
-	}
-
-	.action-button {
-		transition: all 0.2s;
-		cursor: pointer;
-		border: none;
-		border-radius: 6px;
-		background: linear-gradient(135deg, #00d4ff, #8b5cf6);
-		padding: 0.375rem 0.75rem;
-		color: white;
-		font-size: 0.75rem;
-	}
-
-	.action-button:hover {
-		transform: scale(1.05);
-		box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
-	}
-
-	.info-section {
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		border-radius: 12px;
-		background-color: rgba(31, 41, 55, 0.5);
-		padding: 1rem 1.5rem;
-	}
-
-	.info-section p {
-		margin: 0;
-		color: #9ca3af;
-		font-size: 0.875rem;
-	}
-</style>

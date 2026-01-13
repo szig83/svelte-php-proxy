@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { login, getAuthState } from '$lib/auth';
 	import { navigateAfterLogin } from '$lib/auth/guard.svelte';
+	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import Logo from '$lib/components/Logo.svelte';
 	import Decor from './Decor.svelte';
@@ -10,10 +11,34 @@
 	let isSubmitting = $state(false);
 	let errorMessage = $state('');
 
+	/**
+	 * Meghatározza a bejelentkezés utáni céloldalt a jogosultságok alapján
+	 * - Ha van "user" jog: protected rész (/)
+	 * - Ha csak "admin" jog van: admin felület (/admin)
+	 */
+	function getTargetPath(permissions: string[]): string {
+		const hasUserPermission = permissions.includes('user');
+		const hasAdminPermission = permissions.includes('admin');
+
+		// Ha van user jog (akár admin-nal együtt is), a protected részre megy
+		if (hasUserPermission) {
+			return '/';
+		}
+
+		// Ha csak admin jog van, az admin felületre megy
+		if (hasAdminPermission) {
+			return '/admin';
+		}
+
+		// Fallback - nem kellene ide jutni, mert üres permissions-t már ellenőriztük
+		return '/';
+	}
+
 	onMount(() => {
 		const authState = getAuthState();
-		if (authState.isAuthenticated) {
-			navigateAfterLogin('/');
+		if (authState.isAuthenticated && authState.user) {
+			const targetPath = getTargetPath(authState.user.permissions);
+			goto(targetPath);
 		}
 	});
 
@@ -30,8 +55,15 @@
 
 		try {
 			const result = await login({ email: userId, password });
-			if (result.success) {
-				await navigateAfterLogin('/');
+			if (result.success && result.user) {
+				const targetPath = getTargetPath(result.user.permissions);
+				// Ha van redirect paraméter és van user jog, azt használjuk
+				if (result.user.permissions.includes('user')) {
+					await navigateAfterLogin(targetPath);
+				} else {
+					// Admin-only: mindig az admin oldalra
+					await goto(targetPath);
+				}
 			} else {
 				errorMessage = result.error?.message || 'Bejelentkezés sikertelen.';
 			}

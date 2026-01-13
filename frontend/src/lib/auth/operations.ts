@@ -117,6 +117,19 @@ export async function login(credentials: LoginCredentials): Promise<AuthResponse
         console.log(response)
 
 		if (response.success && response.data?.user) {
+			// Permissions ellenőrzése - üres permissions esetén sikertelen bejelentkezés
+			const permissions = response.data.user.permissions || [];
+			if (permissions.length === 0) {
+				authStateHelpers.clearAuth();
+				return {
+					success: false,
+					error: {
+						code: 'NO_PERMISSIONS',
+						message: 'Nincs jogosultsága a belépéshez.'
+					}
+				};
+			}
+
 			// Store CSRF token
 			if (response.data.csrf_token) {
 				setCsrfToken(response.data.csrf_token);

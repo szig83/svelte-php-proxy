@@ -1,6 +1,6 @@
 <script lang="ts">
 	// (protected)/+layout.svelte
-	// Protected layout - requires authentication
+	// Protected layout - requires authentication AND "user" permission
 	// Követelmények: 5.1, 5.2
 
 	import { onMount } from 'svelte';
@@ -22,8 +22,9 @@
 			await checkAuth();
 		}
 
-		// Run the guard
+		// Run the guard with "user" permission requirement
 		const allowed = await guardRoute({
+			requiredPermissions: ['user'],
 			redirectTo: '/login',
 			preserveRedirect: true
 		});
