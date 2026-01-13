@@ -1,0 +1,8 @@
+# Rewrite engine bekapcsolása
+RewriteEngine On
+
+# Minden kérés az index.php-ra irányítása
+# (kivéve ha létező fájl vagy könyvtár)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [QSA,L]

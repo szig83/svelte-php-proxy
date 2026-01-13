@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PHPCodeSnifferOptionsConfiguration">
+    <option name="showSniffs" value="true" />
+  </component>
+  <component name="PhpCSFixer">
+    <phpcsfixer_settings>
+      <PhpCSFixerConfiguration tool_path="$USER_HOME$/.composer/vendor/bin/php-cs-fixer" />
+      <phpcs_fixer_by_interpreter asDefaultInterpreter="true" interpreter_id="9f41323e-4fd3-4944-bdf8-2a15ff0e8919" tool_path="/Users/szigeti/.composer/vendor/bin/php-cs-fixer" timeout="30000" />
+    </phpcsfixer_settings>
+  </component>
+  <component name="PhpCodeSniffer">
+    <phpcs_settings>
+      <PhpCSConfiguration beautifier_path="$USER_HOME$/.composer/vendor/bin/phpcbf" tool_path="$USER_HOME$/.composer/vendor/bin/phpcs" />
+      <phpcs_by_interpreter asDefaultInterpreter="true" interpreter_id="9f41323e-4fd3-4944-bdf8-2a15ff0e8919" tool_path="/Users/szigeti/.composer/vendor/bin/phpcs" timeout="30000" />
+    </phpcs_settings>
+  </component>
+  <component name="PhpProjectSharedConfiguration" php_language_level="8.4" />
+  <component name="PhpStan">
+    <PhpStan_settings>
+      <phpstan_by_interpreter asDefaultInterpreter="true" interpreter_id="9f41323e-4fd3-4944-bdf8-2a15ff0e8919" timeout="60000" />
+    </PhpStan_settings>
+  </component>
+</project>

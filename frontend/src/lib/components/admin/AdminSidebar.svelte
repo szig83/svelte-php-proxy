@@ -1,26 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { getAuthState } from '$lib/auth';
-
-	interface MenuItem {
-		label: string;
-		href: string;
-		icon: string;
-	}
-
-	const menuItems: MenuItem[] = [
-		{ label: 'Dashboard', href: '/admin', icon: 'dashboard' },
-		{ label: 'Felhasználók', href: '/admin/users', icon: 'users' },
-		{ label: 'Statisztikák', href: '/admin/stats', icon: 'chart' },
-		{ label: 'Hibák', href: '/admin/errors', icon: 'bug' }
-	];
-
-	function isActive(href: string, currentPath: string): boolean {
-		if (href === '/admin') {
-			return currentPath === '/admin';
-		}
-		return currentPath === href || currentPath.startsWith(href + '/');
-	}
+	import DynamicMenu from '../DynamicMenu.svelte';
 
 	// Ellenőrizzük, hogy a felhasználónak van-e "user" joga is az admin mellett
 	const authState = getAuthState();
@@ -56,79 +37,12 @@
 		</div>
 	</div>
 
-	<!-- Navigation -->
-	<nav class="flex-1 overflow-y-auto px-3">
-		<ul class="space-y-0.5">
-			{#each menuItems as item}
-				{@const active = isActive(item.href, page.url.pathname)}
-				<li>
-					<a
-						href={item.href}
-						class="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] transition-colors
-							{active
-							? 'bg-white/10 font-medium text-white'
-							: 'text-slate-400 hover:bg-white/5 hover:text-white'}"
-					>
-						<span
-							class="flex h-4 w-4 shrink-0 items-center justify-center {active
-								? 'text-cyan-400'
-								: 'text-slate-500'}"
-						>
-							{#if item.icon === 'dashboard'}
-								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="1.5"
-										d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-									/>
-								</svg>
-							{:else if item.icon === 'users'}
-								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="1.5"
-										d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-									/>
-								</svg>
-							{:else if item.icon === 'chart'}
-								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="1.5"
-										d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-									/>
-								</svg>
-							{:else if item.icon === 'bug'}
-								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="1.5"
-										d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-									/>
-								</svg>
-							{:else}
-								<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path
-										stroke-linecap="round"
-										stroke-linejoin="round"
-										stroke-width="1.5"
-										d="M13 10V3L4 14h7v7l9-11h-7z"
-									/>
-								</svg>
-							{/if}
-						</span>
-						<span class="truncate">{item.label}</span>
-					</a>
-				</li>
-			{/each}
-		</ul>
+	<!-- Dynamic Navigation -->
+	<DynamicMenu type="admin" />
 
-		<!-- Back to main site - csak ha van "user" jog is -->
-		{#if hasUserPermission}
+	<!-- Back to main site - csak ha van "user" jog is -->
+	{#if hasUserPermission}
+		<nav class="px-3">
 			<div class="mt-6 border-t border-slate-600 pt-6">
 				<a
 					href="/"
@@ -147,6 +61,6 @@
 					<span>Vissza a főoldalra</span>
 				</a>
 			</div>
-		{/if}
-	</nav>
+		</nav>
+	{/if}
 </aside>

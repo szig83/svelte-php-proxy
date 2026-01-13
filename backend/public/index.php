@@ -177,6 +177,13 @@ function handleLogin(): void
         Response::serverError('Invalid response from authentication service');
     }
 
+    // Permissions ellenőrzése - üres permissions esetén sikertelen bejelentkezés
+    // Biztonsági ellenőrzés: ha nincs jogosultság, nem engedjük be a felhasználót
+    $userPermissions = $body['user']['permissions'] ?? [];
+    if (empty($userPermissions)) {
+        Response::error(401, 'AUTH_FAILED', 'No permissions assigned to user');
+    }
+
     // Tokenek tárolása a session-ben (Követelmény: 3.2)
     TokenHandler::setTokens(
         $body['access_token'],
@@ -496,8 +503,8 @@ function filterTokensFromResponse(mixed $data): mixed
 
     $filtered = [];
     foreach ($data as $key => $value) {
-        // Érzékeny kulcsok kihagyása
-        if (in_array(strtolower($key), $sensitiveKeys, true)) {
+        // Érzékeny kulcsok kihagyása (csak string kulcsok esetén)
+        if (is_string($key) && in_array(strtolower($key), $sensitiveKeys, true)) {
             continue;
         }
 
